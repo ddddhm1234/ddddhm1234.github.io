@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  
+  
+  
+  <entry>
+    <title>Hello World</title>
+    <link href="/2022/09/17/hello-world/"/>
+    <url>/2022/09/17/hello-world/</url>
+    
+    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo new <span class="hljs-string">&quot;My New Post&quot;</span><br></code></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo server<br></code></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo generate<br></code></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo deploy<br></code></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
+    
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>linux syscall桩函数符号恢复</title>
+    <link href="/2022/07/11/linux_syscall%E7%AC%A6%E5%8F%B7%E6%81%A2%E5%A4%8D/"/>
+    <url>/2022/07/11/linux_syscall%E7%AC%A6%E5%8F%B7%E6%81%A2%E5%A4%8D/</url>
+    
+    <content type="html"><![CDATA[<p>逆向IoT Linux的恶意样本的时候，经常会发现elf里不存在导入表，对os api的调用是通过syscall（mips, x86）或svc（arm）指令完成的</p><span id="more"></span><p><img src="http://crsec.work/usr/uploads/2022/07/4186953159.png" alt="0.png"></p><p><img src="http://crsec.work/usr/uploads/2022/07/1104786964.png" alt="1.png"></p><p>可以参考<a href="https://syscalls.w3challs.com/">linux syscall tables</a>进行符号恢复，这种都是很dirty的工作，于是写了一个ida脚本完成这项工作。MIPS O32架构的可以在这下载。其它架构的符号恢复可以在这个脚本的基础上修改完成，工作量挺小的<br><a href="http://crsec.work/usr/uploads/2022/07/1736832843.zip">mips_o32.zip</a></p><p>效果图</p><p><img src="http://crsec.work/usr/uploads/2022/07/183344089.png" alt="3.png"></p>]]></content>
+    
+    
+    <categories>
+      
+      <category>APT</category>
+      
+      <category>逆向</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>绿盟实习</tag>
+      
+      <tag>IDA PRO</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  
+</search>
