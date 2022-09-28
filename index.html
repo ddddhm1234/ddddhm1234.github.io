@@ -258,15 +258,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
         
-        <a href="/2022/07/11/linux_syscall%E7%AC%A6%E5%8F%B7%E6%81%A2%E5%A4%8D/" target="_self">
-          linux syscall桩函数符号恢复
+        <a href="/2022/09/03/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8VSCode%E6%B5%81%E7%95%85%E5%9C%B0%E7%BC%96%E5%86%99IDA_Python%E8%84%9A%E6%9C%AC/" target="_self">
+          如何使用VSCode流畅地编写IDA Python脚本
         </a>
       </h1>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2022/07/11/linux_syscall%E7%AC%A6%E5%8F%B7%E6%81%A2%E5%A4%8D/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2022/09/03/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8VSCode%E6%B5%81%E7%95%85%E5%9C%B0%E7%BC%96%E5%86%99IDA_Python%E8%84%9A%E6%9C%AC/" target="_self">
         <div>
-          逆向IoT Linux的恶意样本的时候，经常会发现elf里不存在导入表，对os api的调用是通过syscall（mips, x86）或svc（arm）指令完成的
+          前言radare2的分析结果与IDA相比差距仍然是较大的，还是有必要使用IDA完成自动化分析工作。本文的内容涵盖如何搭建IDA Python脚本开发环境以及IDA Batch Mode使用入门教程
         </div>
       </a>
 
@@ -274,8 +274,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2022-07-11 14:44" pubdate>
-              2022-07-11
+            <time datetime="2022-09-03 11:17" pubdate>
+              2022-09-03
             </time>
           </div>
         
@@ -290,12 +290,12 @@
     
       <span class="category-chain">
         
-  <a href="/categories/APT/" class="category-chain-item">APT</a>
+  <a href="/categories/%E9%80%86%E5%90%91/" class="category-chain-item">逆向</a>
   
   
     <span>></span>
     
-  <a href="/categories/APT/%E9%80%86%E5%90%91/" class="category-chain-item">逆向</a>
+  <a href="/categories/%E9%80%86%E5%90%91/%E5%BC%80%E5%8F%91/" class="category-chain-item">开发</a>
   
   
 
@@ -312,9 +312,466 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E7%BB%BF%E7%9B%9F%E5%AE%9E%E4%B9%A0/">#绿盟实习</a>
-            
               <a href="/tags/IDA-PRO/">#IDA PRO</a>
+            
+              <a href="/tags/IDA/">#IDA</a>
+            
+              <a href="/tags/%E9%80%86%E5%90%91%E8%87%AA%E5%8A%A8%E5%8C%96/">#逆向自动化</a>
+            
+              <a href="/tags/%E6%B5%81%E7%A8%8B%E5%8C%96%E5%B7%A5%E4%BD%9C/">#流程化工作</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2022/08/30/C++%E5%AE%9E%E7%8E%B0stdmem_fn/" target="_self">
+          C++实现std::mem_fn
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2022/08/30/C++%E5%AE%9E%E7%8E%B0stdmem_fn/" target="_self">
+        <div>
+          mem_fn，顾名思义，是指向类成员函数的指针，调用非静态的类成员函数时，需要传递一个隐含的参数self指针，以调用a.func()为例，编译器帮助我们完成了传递self指针的过程，但有时候我们有这样的需求，获取A.func的指针，然后依次传递a,b,c,d,…等作为self参数去调用A.func。std::mem_fn可以帮助我们实现这个需求，本文探讨一下std::mem_fn的实现原理，并实现
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-08-30 19:07" pubdate>
+              2022-08-30
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%BC%80%E5%8F%91/" class="category-chain-item">开发</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2022/08/23/Modern_C++/" target="_self">
+          Modern C++
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2022/08/23/Modern_C++/" target="_self">
+        <div>
+          简介本文来源于我的《Accelerated C++》学习笔记，但这本书并不包含现代C++（C++11以后的C++标准）。而后通过查阅零散资料以及《C++ Primer Plus 6th》补充了现代C++的部分。通过阅读本文，读者可以快速入门现代C++目标人群画像  学习过C语言 学习过Java等语言，了解Java 面向对象与泛型编程
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-08-23 14:34" pubdate>
+              2022-08-23
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%BB%98%E8%AE%A4%E5%88%86%E7%B1%BB/" class="category-chain-item">默认分类</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2022/08/18/CMake%E7%AC%94%E8%AE%B0/" target="_self">
+          CMake笔记
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2022/08/18/CMake%E7%AC%94%E8%AE%B0/" target="_self">
+        <div>
+          因为不频繁用C/C++开发项目，所以，用几次CMake就得学几次CMake……为了节省时间，写篇文章记录一下学习过程，作为自己日后翻阅的资料
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-08-18 13:34" pubdate>
+              2022-08-18
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E7%AC%94%E8%AE%B0/" class="category-chain-item">笔记</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E7%AC%94%E8%AE%B0/%E5%BC%80%E5%8F%91/" class="category-chain-item">开发</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2022/08/17/Powershell_permanent_alias/" target="_self">
+          Powershell permanent alias
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2022/08/17/Powershell_permanent_alias/" target="_self">
+        <div>
+          最近一直要用到pin，发现可以新建一个别名简化流程 1New-Alias -Name pin -Value D:\Projects\pin\pin.exe 完成后，输入pin即可。但是坑爹的是重启一个shell窗口这个别名就失效了 参考1，在C:\Users\user_name\Documents目录下新建一个profile.ps1，然后把新建别名的指令写入它，powershell在以user_n
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-08-17 14:11" pubdate>
+              2022-08-17
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E7%AC%94%E8%AE%B0/" class="category-chain-item">笔记</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2022/08/02/radare2%E5%B0%8F%E8%AE%B0/" target="_self">
+          radare2小记
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2022/08/02/radare2%E5%B0%8F%E8%AE%B0/" target="_self">
+        <div>
+          需求最近需要一些轻量级的分析框架提取大量信息，试用了IDA和Ghidra的Batch mode后，我的内心只有一个想法：卧槽这都啥玩意啊。IDA的Batch mode下，生成一个idb文件所需时间是gui模式的数十倍。试用了radare2后，真香
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-08-02 16:45" pubdate>
+              2022-08-02
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E7%AC%94%E8%AE%B0/" class="category-chain-item">笔记</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2022/07/29/pwnable_bottle%E7%B3%BB%E5%88%97WP/" target="_self">
+          pwnable bottle系列部分WP
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2022/07/29/pwnable_bottle%E7%B3%BB%E5%88%97WP/" target="_self">
+        <div>
+          前言最近在想社团招新培训的事，于是找了一些入门安全学习资料，在这个过程中还是有一些收获的，写篇文章记录一下 pwnable.kr cmd1 显然，我们要通过cmd1执行cat flag 这道题有两个坑点  修改了PATH环境变量为/thankyouverymuch，所以我们必须使用绝对路径引用cat和flag  有一个过滤函数，会过滤掉包含’sh’, ‘flag’, ‘tmp’的命令   如果不过
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-07-29 13:52" pubdate>
+              2022-07-29
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E7%AC%94%E8%AE%B0/" class="category-chain-item">笔记</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2022/07/25/MIPS%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8/" target="_self">
+          MIPS汇编入门
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2022/07/25/MIPS%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8/" target="_self">
+        <div>
+          前言IoT Malware的特点就是跨架构，目前常见的就有x86, AMD64, Arm, MIPS, PowerPC等架构。很多时候看IDA的反编译结果已经不足以完成分析工作了，需要直接进入汇编层次的对抗。本文记录一下MIPS架构汇编的学习
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-07-25 14:49" pubdate>
+              2022-07-25
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E7%AC%94%E8%AE%B0/" class="category-chain-item">笔记</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E7%AC%94%E8%AE%B0/%E9%80%86%E5%90%91/" class="category-chain-item">逆向</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2022/07/18/UPX%E9%9D%99%E6%80%81%E8%84%B1%E5%A3%B3/" target="_self">
+          UPX静态脱壳
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2022/07/18/UPX%E9%9D%99%E6%80%81%E8%84%B1%E5%A3%B3/" target="_self">
+        <div>
+          说明最近开始做恶意软件归因了，需要从蜜罐里面提取出大的样本集，部分样本是UPX加壳处理过的，需要脱壳处理。使用upx -d对样本进行处理，部分脱壳成功，部分失败。失败的部分是魔改了upx加壳后的信息，修复后即可进行脱壳处理
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-07-18 18:52" pubdate>
+              2022-07-18
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%80%86%E5%90%91/" class="category-chain-item">逆向</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E7%BB%BF%E7%9B%9F%E5%AE%9E%E4%B9%A0/">#绿盟实习</a>
             
           </div>
         
@@ -323,6 +780,12 @@
   </div>
 
 
+
+  <nav aria-label="navigation">
+    <span class="pagination" id="pagination">
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/#board">2</a><a class="extend next" rel="next" href="/page/2/#board"><i class="iconfont icon-arrowright"></i></a>
+    </span>
+  </nav>
 
 
 

@@ -1,0 +1,751 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="chengrui">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="前言我在绿盟实习参与的一个工作是代码相似度检测，我的mentor晖哥的做法是先完成binary code -&gt; ir的过程，再在ir的基础上进行相似度比较。这样做的优点是可以消除架构带来的差异，比如一个恶意软件家族可能会被编译到多个CPU架构上，为了检测出同家族不同架构恶意样本的相似度就必须克服这个难题，也就是将binary code提升到ir。因此，我开始调研IDA提供的Microcode">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IDA Pro Microcode 学习">
+<meta property="og:url" content="http://example.com/2022/07/12/IDA_Pro_Microcode_%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="Rui Cheng, aka 程瑞">
+<meta property="og:description" content="前言我在绿盟实习参与的一个工作是代码相似度检测，我的mentor晖哥的做法是先完成binary code -&gt; ir的过程，再在ir的基础上进行相似度比较。这样做的优点是可以消除架构带来的差异，比如一个恶意软件家族可能会被编译到多个CPU架构上，为了检测出同家族不同架构恶意样本的相似度就必须克服这个难题，也就是将binary code提升到ir。因此，我开始调研IDA提供的Microcode">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/2022/07/4129722024.jpg">
+<meta property="og:image" content="http://example.com/images/2022/07/2995875403.png">
+<meta property="og:image" content="http://example.com/images/2022/07/3629792851.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1398017589.png">
+<meta property="og:image" content="http://example.com/images/2022/07/3613291921.png">
+<meta property="og:image" content="http://example.com/images/2022/07/2767392111.png">
+<meta property="og:image" content="http://example.com/images/2022/07/3193069826.png">
+<meta property="og:image" content="http://example.com/images/2022/07/4234484464.png">
+<meta property="og:image" content="http://example.com/images/2022/07/2752911078.png">
+<meta property="og:image" content="http://example.com/images/2022/07/3569463680.png">
+<meta property="og:image" content="http://example.com/images/2022/07/44853894.png">
+<meta property="og:image" content="http://example.com/images/2022/07/2863827999.png">
+<meta property="og:image" content="http://example.com/images/2022/07/3255716351.png">
+<meta property="og:image" content="http://example.com/images/2022/07/560598955.png">
+<meta property="og:image" content="http://example.com/images/2022/07/236423254.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1641648373.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1099185007.png">
+<meta property="og:image" content="http://example.com/images/2022/07/2650201803.png">
+<meta property="og:image" content="http://example.com/images/2022/07/502890132.png">
+<meta property="og:image" content="http://example.com/images/2022/07/2387469373.png">
+<meta property="og:image" content="http://example.com/images/2022/07/624016660.png">
+<meta property="og:image" content="http://example.com/images/2022/07/3616657268.png">
+<meta property="og:image" content="http://example.com/images/2022/07/379942362.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1852734967.png">
+<meta property="og:image" content="http://example.com/images/2022/07/756624582.png">
+<meta property="og:image" content="http://example.com/images/2022/07/4135445173.png">
+<meta property="og:image" content="http://example.com/images/2022/07/3952922062.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1228225139.png">
+<meta property="og:image" content="http://example.com/images/2022/07/4213138500.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1932526864.png">
+<meta property="og:image" content="http://example.com/images/2022/07/3959183439.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1596223216.png60.png">
+<meta property="article:published_time" content="2022-07-12T10:38:00.000Z">
+<meta property="article:modified_time" content="2022-07-13T11:00:45.000Z">
+<meta property="article:author" content="程瑞">
+<meta property="article:tag" content="绿盟实习">
+<meta property="article:tag" content="IDA PRO">
+<meta property="article:tag" content="IR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/2022/07/4129722024.jpg">
+  
+  
+  
+  <title>IDA Pro Microcode 学习 - Rui Cheng, aka 程瑞</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>rcheng</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="IDA Pro Microcode 学习"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-07-12 18:38" pubdate>
+          2022年7月12日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          43 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">IDA Pro Microcode 学习</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>我在绿盟实习参与的一个工作是代码相似度检测，我的mentor晖哥的做法是先完成binary code -&gt; ir的过程，再在ir的基础上进行相似度比较。这样做的优点是可以消除架构带来的差异，比如一个恶意软件家族可能会被编译到多个CPU架构上，为了检测出同家族不同架构恶意样本的相似度就必须克服这个难题，也就是将binary code提升到ir。因此，我开始调研IDA提供的Microcode。下文中出现的IR如无特殊说明全部指代Microcode</p>
+<span id="more"></span>
+<h3 id="IDA反编译器架构"><a href="#IDA反编译器架构" class="headerlink" title="IDA反编译器架构"></a>IDA反编译器架构</h3><p>产生IR代码 -&gt; 转换IR代码（进行各种优化化简IR代码） -&gt; 分别局部变量 -&gt; 产生ctree -&gt; 修饰ctree -&gt; 打印ctree（反汇编结果）</p>
+<p>在早期，IDA只开放了操纵ctree的API。在IDA 7.0版本中，终于出现了操纵IR的API</p>
+<h4 id="CTREE"><a href="#CTREE" class="headerlink" title="CTREE"></a>CTREE</h4><h5 id="AST"><a href="#AST" class="headerlink" title="AST"></a>AST</h5><p>ctree可以理解为ida反编译器输出源代码的ast。因此要了解ctree，首先要了解ast。以下面这段函数为例</p>
+<figure class="highlight nim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs nim"><span class="hljs-type">int</span> <span class="hljs-keyword">func</span>(<span class="hljs-type">int</span> a)<br>&#123;<br>  <span class="hljs-type">int</span> <span class="hljs-built_in">result</span>;<br>  <span class="hljs-keyword">if</span> ( a == <span class="hljs-number">1</span> )<br>  &#123;<br>    <span class="hljs-built_in">result</span> = <span class="hljs-number">5</span>;<br>  &#125;<br>  <span class="hljs-keyword">else</span><br>  &#123;<br>    <span class="hljs-built_in">result</span> = <span class="hljs-number">6</span>;<br>  &#125;<br>  <span class="hljs-keyword">return</span> <span class="hljs-built_in">result</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p><img src="/images/2022/07/4129722024.jpg" srcset="/img/loading.gif" lazyload alt="hri_1.jpg"></p>
+<p>start节点对应函数的入口，它的后继节点{2}代表empty block的后继基本块中有两条语句，它的两条边#1, #2的目标节点就是后继基本块中的第1与第2条语句。第1条语句是if (a == 1)，对应在ast中，它的后继节点有3个，分别对应判断条件，为真时的后继基本块，为假时的后继基本块，两个基本块都只有一条语句</p>
+<h5 id="CTREE-1"><a href="#CTREE-1" class="headerlink" title="CTREE"></a>CTREE</h5><p>IDA反编译器使用ctree指代ast，ctree中的节点都是类cinsn_t或者cexpr_t的实例，这两个都是类citem_t类的子类</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">citem_t</span><br>&#123;<br>  <span class="hljs-type">ea_t</span> ea; <span class="hljs-comment">// 与这个节点有关的汇编代码的地址</span><br>  <span class="hljs-type">ctype_t</span> op; <span class="hljs-comment">// 节点类型</span><br>  ...<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>citem_t.op代表着节点类型，它的可能取值有两类：cot_xx与cit_xx，o指代operation，代表这个节点的类型是表达式，i指代instruction，代表节点的类型是指令。表达式的类型可以有：cot_asg (assign, x = y), cot_call (call, x(…))，指令的类型可以有cit_if (if语句), cit_return (return语句)</p>
+<p>我们解析一个实际函数的CTREE，该函数如下图所示<br><img src="/images/2022/07/2995875403.png" srcset="/img/loading.gif" lazyload alt="1.png"></p>
+<p>函数的入口块有5条边，子节点是expr, expr, expr, if, if，对应反编译源代码中的前3条赋值语句与2条if语句。</p>
+<p><img src="/images/2022/07/3629792851.png" srcset="/img/loading.gif" lazyload alt="2.png"></p>
+<p>第一个expr节点的子节点是asg，代表赋值操作。asg节点的左右子节点分别是var.4 v2与call，var.4中的.4代表变量长度是4字节。call节点的左子节点是目标地址与函数原型，右子节点是调用参数</p>
+<p><img src="/images/2022/07/1398017589.png" srcset="/img/loading.gif" lazyload alt="3.png"></p>
+<p>第一个if节点的</p>
+<p><img src="/images/2022/07/3613291921.png" srcset="/img/loading.gif" lazyload alt="4.png"></p>
+<p>ctree的产生也是分阶段的，反编译器会对产生的ctree进行一系列的优化。有如下若干个阶段的ctree，它们具有不同的成熟度<br><img src="/images/2022/07/2767392111.png" srcset="/img/loading.gif" lazyload alt="17.png"></p>
+<p>在idapython中，可以通过继承ida_hexrays.Hexrays_Hooks类，来注册反编译器行为的回调函数，通过重写maturity方法，可以接收ctree成熟度变化的信息</p>
+<h4 id="IR"><a href="#IR" class="headerlink" title="IR"></a>IR</h4><h3 id="examples解析"><a href="#examples解析" class="headerlink" title="examples解析"></a>examples解析</h3><p>在&lt;IDA安装目录&gt;\python\examples\hexrays下，存在一系列有关IR与CTREE的examples。本节解析一下这些examples</p>
+<h4 id="vds1-py"><a href="#vds1-py" class="headerlink" title="vds1.py"></a>vds1.py</h4><p>这个插件很简单，反编译一个函数，打印出伪代码<br><img src="/images/2022/07/3193069826.png" srcset="/img/loading.gif" lazyload alt="14.png"></p>
+<h4 id="vds3-py"><a href="#vds3-py" class="headerlink" title="vds3.py"></a>vds3.py</h4><p>这个插件的作用是对if-else语句做翻转变化，如下所示</p>
+<figure class="highlight gcode"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs gcode"><span class="hljs-comment">// 翻转前</span><br><span class="hljs-keyword">if</span> <span class="hljs-comment">(cond)</span><br>  stateme<span class="hljs-symbol">nt1</span>;<br>else<br>  stateme<span class="hljs-symbol">nt2</span>;<br><br><span class="hljs-comment">// 翻转后</span><br><span class="hljs-keyword">if</span> <span class="hljs-comment">(!cond)</span><br>  stateme<span class="hljs-symbol">nt2</span>;<br>else<br>  stateme<span class="hljs-symbol">nt1</span>;<br></code></pre></td></tr></table></figure>
+<p>下面这段代码是一个标准插件的标准模板。关于这个模板的详细说明，请参考文献<a href="/images/2022/07/2767392111.png">6</a><br><img src="/images/2022/07/4234484464.png" srcset="/img/loading.gif" lazyload alt="5.png"></p>
+<p>这段代码是翻转if的主要逻辑，关键在于find_if_statement与invert_if这两个方法的实现<br><img src="/images/2022/07/2752911078.png" srcset="/img/loading.gif" lazyload alt="7.png"></p>
+<p>find_if_statement方法如下所示。这段代码的前半部分挺容易理解，就是判断当前选中的ctree中的节点是否为if节点，如果是的话就直接返回这个节点。问题在于后半部分，后半部分的代码的作用是当选中的语句是else时，回忆ctree一节中的内容，在ctree中是没有else节点的，它只会作为if节点的子节点出现。现在，我们面临的问题有两个：1. 判断选中的是否为else语句；2. 通过else语句寻找对应的if节点<br><img src="/images/2022/07/3569463680.png" srcset="/img/loading.gif" lazyload alt="8.png"></p>
+<p>判断选中的是否为else语句的条件是 vu.tail.citype == ida_hexrays.VDI_TAIL and vu.tail.loc.itp == ida_hexrays.ITP_ELSE，我们依次来解析一下这两条件</p>
+<p>vdui_t.tail字段指明当前选中的item的tail节点<br><img src="/images/2022/07/44853894.png" srcset="/img/loading.gif" lazyload alt="9.png"></p>
+<p>VDI_TAIL常量的说明如下，意思是当前焦点坐标越过了当前行，停留在可以插入注释的地方，即行尾<br><img src="/images/2022/07/2863827999.png" srcset="/img/loading.gif" lazyload alt="10.png"></p>
+<p>vu.tail.loc是类treeloc_t的实例，在IDA SDK中，treeloc_t类的注释是”Ctree location. Used to denote comment locations.”，这个类是用来标注注释位置的，也就是说，在源代码中插入的注释应该和ctree中的某个节点关联起来，这个关联关系就使用treeloc_t类来确定</p>
+<p>在ctree中，一个节点可能会被附加多个注释，比如一条if语句可以有如下这些注释。前3条注释都会被关联到if节点，但是这3条注释它们会有相同的ea（对应关联节点在汇编代码中的地址），为了区分这3条注释，引入了treeloc_t.ipt字段，它与ea共同标注注释。比如当取值为ITP_ELSE时，就说明这条注释是与if语句中的else关键字关联的</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs awk"><span class="hljs-keyword">if</span> (...) &#123; <span class="hljs-regexp">//</span> 注释<span class="hljs-number">1</span><br>&#125; <span class="hljs-regexp">//</span> 注释<span class="hljs-number">2</span><br><span class="hljs-keyword">else</span> &#123; <span class="hljs-regexp">//</span> 注释<span class="hljs-number">3</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>treeloc_t.ipt字段可取的值如下<br><img src="/images/2022/07/3255716351.png" srcset="/img/loading.gif" lazyload alt="11.png"></p>
+<p>综合上面这些前置知识，可以得出判断选中的是else语句的条件，即，首先定位到选中行的行尾，获取注释信息，然后根据treeloc_t.ipt字段判断注释是否与else关键字关联，如果是的话，就说明选中的是else语句。然后通过treeloc_t.ea字段获取与注释关联的if节点在汇编代码中的地址，再通过地址在ctree中搜索即可寻找到与else语句关联的if节点</p>
+<p>遍历ctree搜索if节点的代码如下<br><img src="/images/2022/07/560598955.png" srcset="/img/loading.gif" lazyload alt="12.png"></p>
+<p>invert_if方法的实现如下<br><img src="/images/2022/07/236423254.png" srcset="/img/loading.gif" lazyload alt="13.png"></p>
+<p>这个插件还有一些内容，主要就是把翻转过的if节点的地址记录在idb文件中，打开对应文件的时候自动再翻转一遍这些if节点。这与Microcode关系不大</p>
+<h4 id="vds4-py"><a href="#vds4-py" class="headerlink" title="vds4.py"></a>vds4.py</h4><p>这个插件搜集用户自定义的信息并打印</p>
+<p>打印用户注释，打印的字段包括treeloc_t.ea与treeloc_t.ipt与注释内容<br><img src="/images/2022/07/1641648373.png" srcset="/img/loading.gif" lazyload alt="15.png"></p>
+<p>剩余的代码也基本上是类似风格，不再赘述</p>
+<h4 id="vds5-py"><a href="#vds5-py" class="headerlink" title="vds5.py"></a>vds5.py</h4><h4 id="vds6-py"><a href="#vds6-py" class="headerlink" title="vds6.py"></a>vds6.py</h4><h4 id="vds7-py"><a href="#vds7-py" class="headerlink" title="vds7.py"></a>vds7.py</h4><p>这个插件通过遍历ctree中的block节点dump出所有block</p>
+<p>注册了反编译器的回调函数。注意这里是当ctree的成熟度为CMT_BUILD时dump所有block节点，CMT_BUILD阶段的ctree是刚刚产生的，与最终呈现的ctree相差甚远，所以可能会dump出很多最终反编译结果中不存在的节点<br><img src="/images/2022/07/1099185007.png" srcset="/img/loading.gif" lazyload alt="16.png"></p>
+<p>遍历ctree的代码如下。值得注意的是可以直接使用for ins in b语句来遍历block中的所有指令<br><img src="/images/2022/07/2650201803.png" srcset="/img/loading.gif" lazyload alt="18.png"></p>
+<h4 id="vds8-py"><a href="#vds8-py" class="headerlink" title="vds8.py"></a>vds8.py</h4><p>这个插件的作用是改善反编译结果，将svc指令反编译为函数调用</p>
+<p>这段代码注册了个action，控制插件的功能开关。主要逻辑在udc_exit_t类中<br><img src="/images/2022/07/502890132.png" srcset="/img/loading.gif" lazyload alt="19.png"></p>
+<p>udc_exit_t类派生自udc_filter_t类<br><img src="/images/2022/07/2387469373.png" srcset="/img/loading.gif" lazyload alt="20.png"></p>
+<p>从udc_filter_t类定义可以看出，udc_exit_t类重写了init与match两个方法，install与uninstall方法都是调用install_microcode_filter函数安装/卸载filter<br><img src="/images/2022/07/624016660.png" srcset="/img/loading.gif" lazyload alt="21.png"></p>
+<p>microcode_filter_t类定义如下。注意它的说明，一个派生自microcode_filter_t类的类实例可以被注册用于非标准IR生成。在IR生成阶段，每个被注册的对象会按如下方式调用。也就是说，将汇编指令提升到IR时，是有一个标准IR生成的，这是对汇编指令的标准解析，但是也可以通过注册filter，进行非标准IR生成。在进行标准IR生成流程前，会先调用filter.match方法，如果返回的是MERR_OK，就调用filter.apply方法完成IR生成，当然这样就不需要进行标准IR生成流程了，这个过程就叫非标准IR生成</p>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs abnf">if ( filter-&gt;match(cdg) )<br>  code <span class="hljs-operator">=</span> filter-&gt;apply(cdg)<span class="hljs-comment">;</span><br>if ( code <span class="hljs-operator">=</span><span class="hljs-operator">=</span> MERR_OK ) <br>  continue<span class="hljs-comment">; // filter generated microcode, go to the next instruction</span><br></code></pre></td></tr></table></figure>
+<p><img src="/images/2022/07/3616657268.png" srcset="/img/loading.gif" lazyload alt="22.png"></p>
+<p>udc_filter_t类派生自microcode_filter_t类，它的作用是在生成IR时，将符合条件的汇编指令翻译为为一条icall指令，icall指令的callee操作数由udc_filter_t.init方法确定<br><img src="/images/2022/07/379942362.png" srcset="/img/loading.gif" lazyload alt="23.png"></p>
+<h4 id="vds10-py"><a href="#vds10-py" class="headerlink" title="vds10.py"></a>vds10.py</h4><p>vds9.py运行于ASM -&gt; IR的阶段，vds10.py运行于IR优化阶段。它将<strong>call   !DbgRaiseAssertionFailure <a href="fast:">fast:</a>.0</strong>转换成<strong>call   !DbgRaiseAssertionFailure &lt;fast:”char *” “assertion text”&gt;.0</strong>，其中assertion text是从汇编代码的注释中提取的。DbgRaiseAssertionFailure是一个helper function，helper function是反编译器为了改善反编译器结果创造的不存在于原程序中的函数，比如 int 2c 指令，会被反编译器替换为__int2c()，其中__int2c这个函数就是helper function，选中后双击它是无法跟进这个函数体内部的，因为它并不存在于原程序中</p>
+<p>这个插件在我的IDA 7.6上存在一点问题，以下面这段代码为例，IDA反编译器的结果是__int2c()而非DbgRaiseAssertionFailure()<br><img src="/images/2022/07/1852734967.png" srcset="/img/loading.gif" lazyload alt="24.png"></p>
+<p>我修改了下这个插件，让它寻找call __int2c(), 并将call __int2c()修改为call DbgRaiseAssertionFailure()<br><img src="/images/2022/07/756624582.png" srcset="/img/loading.gif" lazyload alt="25.png"></p>
+<p>插件的主要代码集中在类nt_assert_optimizer_t, 该类派生自optinsn_t类。optinsn_t类的定义如下。注释的意思是说，我们可以自己从optinsn_t类派生子类，实现func方法，注册回调之后，就可以对<strong>单条IR指令</strong>进行优化<br><img src="/images/2022/07/4135445173.png" srcset="/img/loading.gif" lazyload alt="26.png"></p>
+<p>optinsn_t.func方法原型如下。mblock_t * blk是指令所在block，也可能为null，为null就说明这条指令的优化必须与上下文无关；minsn_t * ins 待优化的指令，注意我们不能直接删除它，但可以把它改成nop作为替代，遍历这条指令的子指令需要通过派生minsn_visitor_t类进行，注意不能用nop替换子指令，但可以把它改成mov x,x；int optflags，文档并没有给出这个参数的具体取值；返回值是改变的指令数，注意如果改变了use/def链，必须调用mblock_t.mark_lists_dirty()标记污染以通知反编译器重新产生use/def链<br><img src="/images/2022/07/3952922062.png" srcset="/img/loading.gif" lazyload alt="27.png"></p>
+<p>具体优化过程在handle_nt_assert方法内。我们只是修改call指令的操作数，不会影响use/def链，所以无需进行标记工作。并且我们只会影响一条指令，所以返回值是1<br><img src="/images/2022/07/1228225139.png" srcset="/img/loading.gif" lazyload alt="28.png"></p>
+<p>handle_nt_assert方法如下<br><img src="/images/2022/07/4213138500.png" srcset="/img/loading.gif" lazyload alt="29.png"></p>
+<p>ins.d的类型是mop_t *, .f属性来自于mop_t类中的共用体。编码时，需要根据minsn_t.opcode确定指令，再根据指令使用mop_t中的共用体属性<br><img src="/images/2022/07/1932526864.png" srcset="/img/loading.gif" lazyload alt="30.png"></p>
+<p>反编译结果如下图所示<br><img src="/images/2022/07/3959183439.png" srcset="/img/loading.gif" lazyload alt="31.png"><br><img src="/images/2022/07/1596223216.png60.png" srcset="/img/loading.gif" lazyload alt="32.png"></p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://recon.cx/2018/brussels/resources/slides/RECON-BRX-2018-Decompiler-internals-microcode.pdf">Decompiler internals: microcode</a></li>
+<li><a target="_blank" rel="noopener" href="https://hex-rays.com/blog/microcode-in-pictures/">Microcode in pictures</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.hex-rays.com/blog/hex-rays-decompiler-primer">Hex-rays decompiler primer</a></li>
+<li><a target="_blank" rel="noopener" href="https://hex-rays.com/products/decompiler/manual/sdk/">IDA SDK</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/patois/HRDevHelper">IDA CTREE图形化浏览插件</a></li>
+<li><a target="_blank" rel="noopener" href="https://hex-rays.com/blog/augmenting-ida-ui-with-your-own-actions/">Augmenting IDA UI with your own actions</a></li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%80%86%E5%90%91/" class="category-chain-item">逆向</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E7%BB%BF%E7%9B%9F%E5%AE%9E%E4%B9%A0/">#绿盟实习</a>
+      
+        <a href="/tags/IDA-PRO/">#IDA PRO</a>
+      
+        <a href="/tags/IR/">#IR</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>IDA Pro Microcode 学习</div>
+      <div>http://example.com/2022/07/12/IDA_Pro_Microcode_学习/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>chengrui</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年7月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/07/14/IDA_%E7%AA%97%E5%8F%A3%E5%B8%83%E5%B1%80/" title="IDA 窗口布局">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">IDA 窗口布局</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/07/11/linux_syscall%E7%AC%A6%E5%8F%B7%E6%81%A2%E5%A4%8D/" title="linux syscall桩函数符号恢复">
+                        <span class="hidden-mobile">linux syscall桩函数符号恢复</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

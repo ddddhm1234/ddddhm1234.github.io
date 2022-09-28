@@ -1,0 +1,749 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="chengrui">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="说明今年四月份被浩天哥面了一次，浩天哥第一个问题就是C++菱形继承的逆向，直接把我干不会了，第二个问题是内存对齐，我答的也不是很好。最近看了会CMU的深入理解操作系统网课，第二个问题我应该能答好了。一般而言，OS的Cache缓存的单位是Block，一行中有若干Block，一组中有若干行。对Cache访问时，地址可以看成tag, 组索引, 块偏移3个部分。如果内存不对齐的话，很容易导致访问内存时导致">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++虚函数问题">
+<meta property="og:url" content="http://example.com/2022/07/07/C++%E8%99%9A%E5%87%BD%E6%95%B0%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="Rui Cheng, aka 程瑞">
+<meta property="og:description" content="说明今年四月份被浩天哥面了一次，浩天哥第一个问题就是C++菱形继承的逆向，直接把我干不会了，第二个问题是内存对齐，我答的也不是很好。最近看了会CMU的深入理解操作系统网课，第二个问题我应该能答好了。一般而言，OS的Cache缓存的单位是Block，一行中有若干Block，一组中有若干行。对Cache访问时，地址可以看成tag, 组索引, 块偏移3个部分。如果内存不对齐的话，很容易导致访问内存时导致">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/2022/07/2571350809.png">
+<meta property="og:image" content="http://example.com/images/2022/07/241303633.png">
+<meta property="og:image" content="http://example.com/images/2022/07/4275583013.png">
+<meta property="og:image" content="http://example.com/images/2022/07/3102887765.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1087637486.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1518854589.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1645082814.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1705412928.png">
+<meta property="og:image" content="http://example.com/images/2022/07/18026246.png">
+<meta property="og:image" content="http://example.com/images/2022/07/3681687721.png">
+<meta property="og:image" content="http://example.com/images/2022/07/3527814364.png">
+<meta property="og:image" content="http://example.com/images/2022/07/994201872.png">
+<meta property="og:image" content="http://example.com/images/2022/07/2708131805.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1705766799.png">
+<meta property="og:image" content="http://example.com/images/2022/07/3413038564.png">
+<meta property="og:image" content="http://example.com/images/2022/07/787970881.png">
+<meta property="og:image" content="http://example.com/images/2022/07/2211469083.png">
+<meta property="og:image" content="http://example.com/images/2022/07/2196465835.png">
+<meta property="og:image" content="http://example.com/images/2022/07/3522408507.png">
+<meta property="og:image" content="http://example.com/images/2022/07/720849610.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1742605041.png">
+<meta property="og:image" content="http://example.com/images/2022/07/3762695059.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1169776688.png">
+<meta property="og:image" content="http://example.com/images/2022/07/559868875.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1538100346.png">
+<meta property="og:image" content="http://example.com/images/2022/07/99300111.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1097173390.png">
+<meta property="og:image" content="http://example.com/images/2022/07/723160184.png/crsec.work/usr/uploads/2022/07/3522408507.png">
+<meta property="article:published_time" content="2022-07-07T10:40:00.000Z">
+<meta property="article:modified_time" content="2022-07-13T08:37:52.000Z">
+<meta property="article:author" content="程瑞">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="逆向">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/2022/07/2571350809.png">
+  
+  
+  
+  <title>C++虚函数问题 - Rui Cheng, aka 程瑞</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>rcheng</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="C++虚函数问题"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-07-07 18:40" pubdate>
+          2022年7月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          53 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">C++虚函数问题</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>今年四月份被浩天哥面了一次，浩天哥第一个问题就是C++菱形继承的逆向，直接把我干不会了，第二个问题是内存对齐，我答的也不是很好。最近看了会CMU的深入理解操作系统网课，第二个问题我应该能答好了。一般而言，OS的Cache缓存的单位是Block，一行中有若干Block，一组中有若干行。对Cache访问时，地址可以看成tag, 组索引, 块偏移3个部分。如果内存不对齐的话，很容易导致访问内存时导致跨Block读取，这会增加缓存未命中的概率。今天来写篇文章研究一下第一个问题</p>
+<span id="more"></span>
+<h3 id="简单的情况"><a href="#简单的情况" class="headerlink" title="简单的情况"></a>简单的情况</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">A</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> _a;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">a</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Function A.a\n&quot;</span>);<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">B</span> : <span class="hljs-keyword">public</span> A&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> _a;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">a</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Function B.a\n&quot;</span>);<br>    &#125;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    A* a = <span class="hljs-keyword">new</span> <span class="hljs-built_in">B</span>();<br>    a-&gt;_a = <span class="hljs-number">1234</span>; <span class="hljs-comment">//1</span><br>    a-&gt;A::_a = <span class="hljs-number">5678</span>; <span class="hljs-comment">//2</span><br>    a-&gt;<span class="hljs-built_in">a</span>(); <span class="hljs-comment">//3</span><br>    a-&gt;A::<span class="hljs-built_in">a</span>(); <span class="hljs-comment">//4</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>在x64平台上编译。语句1，2编译出的汇编指令相同，继承时，如果产生冲突，子类同名变量会覆盖掉父类变量，即使使用::域说明符也无法改变这个过程<br><img src="/images/2022/07/2571350809.png" srcset="/img/loading.gif" lazyload alt="0.png"><br>语句3通过vftable调用B.a方法，语句4则直接调用了A.a方法。A, B的vftable结构如下，在B的vftable中，A.a被覆盖为B.a<br><img src="/images/2022/07/241303633.png" srcset="/img/loading.gif" lazyload alt="1.png"></p>
+<p>再考虑一下虚方法的继承情况</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">A</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> _a;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">a</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Function A.a\n&quot;</span>);<br>    &#125;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">b</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Function A.b\n&quot;</span>);<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">B</span> : <span class="hljs-keyword">public</span> A&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> _a;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">a</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Function B.a\n&quot;</span>);<br>    &#125;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">d</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Function B.d\n&quot;</span>);<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+<p>虚表结构如下<br><img src="/images/2022/07/4275583013.png" srcset="/img/loading.gif" lazyload alt="2.png"><br>于是可以总结出B继承A时，虚表的继承步骤：</p>
+<ol>
+<li>先初始化B的虚表为A的虚表</li>
+<li>如果发生了override的情况，在B的虚表中完成替换操作</li>
+<li>将B的虚方法地址附加在B的虚表后</li>
+</ol>
+<p>再总结一下C++类的内存模型</p>
+<figure class="highlight diff"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs diff">offset  说明<br><span class="hljs-addition">+0      指针指向虚表</span><br><span class="hljs-addition">+4/8    类变量</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="菱形继承"><a href="#菱形继承" class="headerlink" title="菱形继承"></a>菱形继承</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">A</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> _a;<br>    <span class="hljs-built_in">A</span>() &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;A初始化\n&quot;</span>);<br>    &#125;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">a</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;A.a\n&quot;</span>);<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">B</span> : <span class="hljs-keyword">public</span> A &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> _b;<br>    <span class="hljs-built_in">B</span>() &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;B初始化\n&quot;</span>);<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">C</span> : <span class="hljs-keyword">public</span> A &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> _c;<br>    <span class="hljs-built_in">C</span>() &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;C初始化\n&quot;</span>);<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">D</span> : <span class="hljs-keyword">public</span> B, <span class="hljs-keyword">public</span> C &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> _d;<br>    <span class="hljs-built_in">D</span>() &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;D初始化\n&quot;</span>);<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">d</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;D.d\n&quot;</span>);<br>    &#125;<br>&#125;;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    D* d = <span class="hljs-keyword">new</span> <span class="hljs-built_in">D</span>();<br>    d-&gt;<span class="hljs-built_in">d</span>();<br>    d-&gt;_b = <span class="hljs-number">12</span>;<br>    d-&gt;_c = <span class="hljs-number">31</span>;<br>    d-&gt;_d = <span class="hljs-number">42</span>;<br>    d-&gt;B::_a = <span class="hljs-number">0xBB</span>;<br>    d-&gt;C::_a = <span class="hljs-number">0xCC</span>;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>A是B, C的父类，D又派生自B, C。所以A,B,C,D的派生关系呈现出一个菱形的结构，称之为菱形继承。菱形继承的问题是，B,C中都包含一份A的虚表与类变量，因此D中最终包含两份A，这造成了很大的浪费<br>上述代码的输出是</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs css"><span class="hljs-selector-tag">A</span>初始化<br><span class="hljs-selector-tag">B</span>初始化<br><span class="hljs-selector-tag">A</span>初始化<br>C初始化<br>D初始化<br></code></pre></td></tr></table></figure>
+<p>类D是类B与类C的子类，因此，要在类D维护两个this指针，this_B与this_C，调用B中的方法时，传递this_B，调用C中的方式时传递this_C。试看类D的初始化方法<br><img src="/images/2022/07/3102887765.png" srcset="/img/loading.gif" lazyload alt="3.png"><br>为this_B与this_C设置vftable，注意this_B的vftable中包含D.d()，而this_C的vftable不包含D.d()，事实上this_B与this_D指向同一片内存<br><img src="/images/2022/07/1087637486.png" srcset="/img/loading.gif" lazyload alt="4.png"><br><img src="/images/2022/07/1518854589.png" srcset="/img/loading.gif" lazyload alt="5.png"><br>而后我们可以总结一下类D的this_D指向内存区域的内存布局</p>
+<p>————-0x18————-  ————-0x18————-<br>D::vftable::for_B  类B的成员变量  D::vftable::for_C  类C的成员变量  类D的成员变量<br>D::vftable::for_B与D::vftable::for_C的内容都在上文</p>
+<p>再对类D做一次继承，看看继承后的类布局</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">E</span> : <span class="hljs-keyword">public</span> D &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> _e;<br>    <span class="hljs-built_in">E</span>() &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;E初始化\n&quot;</span>);<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">e</span><span class="hljs-params">()</span>  </span>&#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;E.e\n&quot;</span>);<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+<p>类E的初始化过程如下<br><img src="/images/2022/07/1645082814.png" srcset="/img/loading.gif" lazyload alt="6.png"><br>E.e还是被放置在第1个vftable<br><img src="/images/2022/07/1705412928.png" srcset="/img/loading.gif" lazyload alt="7.png"><br>对E._e的访问<br><img src="/images/2022/07/18026246.png" srcset="/img/loading.gif" lazyload alt="8.png"><br>于是我们可以总结出类E的内存布局</p>
+<table>
+<thead>
+<tr>
+<th>0x38</th>
+<th>0x08</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>类D的内存布局(修改了类D的vftable)</td>
+<td>类E的成员变量，E._e</td>
+</tr>
+</tbody></table>
+<p>类似的，我们可以总结出类D多重继承自类A，类B，类C的内存布局（非虚继承情况）</p>
+<p>|-|-|-|-|<br>|类A内存布局(修改了类A的vftable)|类B内存布局|类C内存布局|类D成员变量|</p>
+<p>单继承的情况其实也可以这样写</p>
+<p>|-|-|<br>|类A内存布局(修改了类A的vftable)|类B成员变量|</p>
+<p>单类的内存布局</p>
+<p>|-|-|<br>|指针，指向vatble|类成员变量|</p>
+<p>自此，彻底搞清楚了无虚继承情况下，类、单类继承、多类继承的内存布局情况</p>
+<h3 id="虚继承"><a href="#虚继承" class="headerlink" title="虚继承"></a>虚继承</h3><p>菱形继承会带来较大的空间浪费，使用虚继承可以避免这种情况。先考虑最简单的情况</p>
+<h4 id="单类的虚继承"><a href="#单类的虚继承" class="headerlink" title="单类的虚继承"></a>单类的虚继承</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">A</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> _a;<br>    <span class="hljs-built_in">A</span>() &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;A初始化\n&quot;</span>);<br>    &#125;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">a</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;A.a\n&quot;</span>);<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">B</span> : <span class="hljs-keyword">virtual</span> <span class="hljs-keyword">public</span> A &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> _b;<br>    <span class="hljs-built_in">B</span>() &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;B初始化\n&quot;</span>);<br>    &#125;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">b</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;B.b&quot;</span>);<br>    &#125;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    B* b = <span class="hljs-keyword">new</span> <span class="hljs-built_in">B</span>();<br>    b-&gt;<span class="hljs-built_in">a</span>();<br>    b-&gt;<span class="hljs-built_in">b</span>();<br>    b-&gt;_b = <span class="hljs-number">0xBB</span>;<br>    b-&gt;_a = <span class="hljs-number">0xAA</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>B类虚继承自A类。可以看到B::B()多了一个参数，它为1时，代表进行虚继承的初始化，它为0时，代表进行普通继承的初始化<br><img src="/images/2022/07/3681687721.png" srcset="/img/loading.gif" lazyload alt="9.png"><br>当a1为1时，进行虚继承初始化，可以看到，这段代码在this + 8处放置了一个vbtable指针，即virtual base table，即虚基类表，而后又调用A::A(this + 0x18)进行初始化<br><img src="/images/2022/07/3527814364.png" srcset="/img/loading.gif" lazyload alt="10.png"><br>vbtable的结构如下，有两项dword值<br><img src="/images/2022/07/994201872.png" srcset="/img/loading.gif" lazyload alt="11.png"><br>下一步的初始化动作是修改类B实例的vftable，再使用this[vbtable<a href="/images/2022/07/2571350809.png">1</a> + 8] = vftable_for_A。我们暂时可以推测出vbtable的结构</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">vbtable</span> &#123;<br>  <span class="hljs-type">int</span> unknown;<br>  <span class="hljs-type">int</span> offset_of_vftable; <span class="hljs-comment">// vftable的偏移，自vbtable的地址开始算起，比如在B类实例中，A类的vbtable的地址是this + 8，那么在B类实例中，A类的vftable的地址应该是 this + 8 + offset_of_vftable</span><br>&#125;<br></code></pre></td></tr></table></figure>
+<p>而后访问类B的虚基类A的成员变量，虚函数等，都是通过vbtable.offse_of_vftable完成的<br><img src="/images/2022/07/2708131805.png" srcset="/img/loading.gif" lazyload alt="13.png"><br><img src="/images/2022/07/1705766799.png" srcset="/img/loading.gif" lazyload alt="14.png"></p>
+<p>现在我们可以总结一下类B虚继承类A时，类B的内存布局情况，如下图所示<br><img src="/images/2022/07/3413038564.png" srcset="/img/loading.gif" lazyload alt="虚继承.png"></p>
+<p>注意观察vftable_for_B中不存在从类A继承而来的虚函数</p>
+<p><img src="/images/2022/07/787970881.png" srcset="/img/loading.gif" lazyload alt="15.png"></p>
+<h4 id="普通继承一个虚继承得到的类"><a href="#普通继承一个虚继承得到的类" class="headerlink" title="普通继承一个虚继承得到的类"></a>普通继承一个虚继承得到的类</h4><figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs xl">class F : public B &#123; <span class="hljs-comment">//类B是通过虚继承类A得到的</span><br>public:<br>    int _f;<br>    virtual void f() &#123;<br>        printf(<span class="hljs-string">&quot;F.f\n&quot;</span>);<br>    &#125;<br>&#125;;<br><br>int main() &#123;<br>    F* f = new F();<br>    <span class="hljs-function"><span class="hljs-title">f</span>-&gt;</span>_a = <span class="hljs-number">0</span>xAA;<br>    <span class="hljs-function"><span class="hljs-title">f</span>-&gt;</span>_b = <span class="hljs-number">0</span>xBB;<br>    <span class="hljs-function"><span class="hljs-title">f</span>-&gt;</span>_f = <span class="hljs-number">0</span>xFF;<br>    <span class="hljs-function"><span class="hljs-title">f</span>-&gt;</span>a();<br>    <span class="hljs-function"><span class="hljs-title">f</span>-&gt;</span>b();<br>    <span class="hljs-function"><span class="hljs-title">f</span>-&gt;</span>f();<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>我们研究一下类F的内存布局。从对F::F()调用的参数a1来看，初始化类F实例时会设置vbtable</p>
+<p><img src="/images/2022/07/2211469083.png" srcset="/img/loading.gif" lazyload alt="17.png"></p>
+<p>可以观察到，类A实例位于this + 0x20，类B实例位于this + 0x0。同时，设置了vftable_for_F</p>
+<p><img src="/images/2022/07/2196465835.png" srcset="/img/loading.gif" lazyload alt="18.png"></p>
+<p>观察一下vftable_for_F，发现它已经包含了F.f()</p>
+<p><img src="/images/2022/07/3522408507.png" srcset="/img/loading.gif" lazyload alt="19.png"></p>
+<p>再观察一下F._a, F._b, F._c对应this指针的偏移，我们知道了类内存布局</p>
+<p><img src="/images/2022/07/720849610.png" srcset="/img/loading.gif" lazyload alt="20.png"></p>
+<p>类B虚继承自类A，类C普通继承自类A</p>
+<p><img src="/images/2022/07/1742605041.png" srcset="/img/loading.gif" lazyload alt="虚继承2.png"></p>
+<p>与上一节中的普通单继承的类内存布局其实很相似，我们给它打一个补丁：需要把虚基类放在内存布局的最末尾，就可以兼容那个继承框架</p>
+<h4 id="存在公共虚基类的情况"><a href="#存在公共虚基类的情况" class="headerlink" title="存在公共虚基类的情况"></a>存在公共虚基类的情况</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">A</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> _a;<br>    <span class="hljs-built_in">A</span>() &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;A初始化\n&quot;</span>);<br>    &#125;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">a</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;A.a\n&quot;</span>);<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">B</span> : <span class="hljs-keyword">virtual</span> <span class="hljs-keyword">public</span> A &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> _b;<br>    <span class="hljs-built_in">B</span>() &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;B初始化\n&quot;</span>);<br>    &#125;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">b</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;B.b&quot;</span>);<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">C</span> : <span class="hljs-keyword">virtual</span> <span class="hljs-keyword">public</span> A &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> _c;<br>    <span class="hljs-built_in">C</span>() &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;C初始化\n&quot;</span>);<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">D</span> : <span class="hljs-keyword">public</span> B, <span class="hljs-keyword">public</span> C &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> _d;<br>    <span class="hljs-built_in">D</span>() &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;D初始化\n&quot;</span>);<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">d</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;D.d\n&quot;</span>);<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">E</span> : <span class="hljs-keyword">public</span> D &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> _e;<br>    <span class="hljs-built_in">E</span>() &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;E初始化\n&quot;</span>);<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">e</span><span class="hljs-params">()</span>  </span>&#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;E.e\n&quot;</span>);<br>    &#125;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    B* b = <span class="hljs-keyword">new</span> <span class="hljs-built_in">B</span>();<br>    b-&gt;<span class="hljs-built_in">a</span>();<br>    b-&gt;<span class="hljs-built_in">b</span>();<br>    b-&gt;_b = <span class="hljs-number">0xBB</span>;<br>    b-&gt;_a = <span class="hljs-number">0xAA</span>;<br>    <br><br><br>    D* d = <span class="hljs-keyword">new</span> <span class="hljs-built_in">D</span>();<br>    d-&gt;<span class="hljs-built_in">d</span>();<br>    d-&gt;_b = <span class="hljs-number">12</span>;<br>    d-&gt;_c = <span class="hljs-number">31</span>;<br>    d-&gt;_d = <span class="hljs-number">42</span>;<br>    d-&gt;B::_a = <span class="hljs-number">0xBB</span>;<br>    d-&gt;C::_a = <span class="hljs-number">0xCC</span>;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>现在我们来考虑更复杂的情况，B, C虚继承A，D多继承B, C。运行后的输出如下，A的构造函数确实只执行了一次</p>
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs mathematica"><span class="hljs-variable">A</span>初始化<br><span class="hljs-variable">B</span>初始化<br><span class="hljs-built_in">C</span>初始化<br><span class="hljs-built_in">D</span>初始化<br><span class="hljs-built_in">D</span><span class="hljs-operator">.</span><span class="hljs-variable">d</span><br></code></pre></td></tr></table></figure>
+<p>我们尝试研究一下这种情况下类D的内存布局。对类D进行初始化，注意到参数a1为1，说明会设置vbtable<br><img src="/images/2022/07/3762695059.png" srcset="/img/loading.gif" lazyload alt="16.png"><br>在D的初始化方法中，首先设置了类B与类C实例的vbtable，并且初始化了一个类A实例，注意类B与类C实例的vbtable.offset_of_vftable都指向刚刚初始化的类A实例，这说明B与D共享同一个类A实例！</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs kotlin"><span class="hljs-number">1.</span><span class="hljs-keyword">this</span> + <span class="hljs-number">0x08</span>		=	vbtable D::<span class="hljs-keyword">for</span> B<br><span class="hljs-number">2.</span><span class="hljs-keyword">this</span> + <span class="hljs-number">0x20</span>		=	vbtable D::<span class="hljs-keyword">for</span> C<br><span class="hljs-number">3.</span><span class="hljs-keyword">this</span> + <span class="hljs-number">0x38</span>		=	A::A(<span class="hljs-keyword">this</span> + <span class="hljs-number">0x38</span>)<br></code></pre></td></tr></table></figure>
+<p><img src="/images/2022/07/1169776688.png" srcset="/img/loading.gif" lazyload alt="21.png"><br><img src="/images/2022/07/559868875.png" srcset="/img/loading.gif" lazyload alt="22.png"></p>
+<p>再看D::D()的后续代码，注意调用了B::B(), C::C()，但传参a1都是0。传参a1为0则表示不需要初始化虚基类，传参a1为1则表示需要初始化虚基类，当类包含虚基类时，类的构造函数是会由编译器隐式包含a1参数的</p>
+<p>再来看B::B(this + 0x0, 0)</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs kotlin"><span class="hljs-number">4.</span><span class="hljs-keyword">this</span> + <span class="hljs-number">0x00</span>		=	B::B(<span class="hljs-keyword">this</span> + <span class="hljs-number">0x00</span>, <span class="hljs-number">0</span>)<br>						因为<span class="hljs-keyword">this</span> + <span class="hljs-number">0x08</span>已经是vbtable D::<span class="hljs-keyword">for</span> B，所以，无需再初始化vbtable<br>	<span class="hljs-number">4.1</span> <span class="hljs-keyword">this</span> + <span class="hljs-number">0x00</span>	=	B::vftable&#123;<span class="hljs-keyword">for</span> B&#125;<br>	<span class="hljs-number">4.2</span>	<span class="hljs-keyword">this</span> + <span class="hljs-number">0x38</span>	=	B::vftable&#123;<span class="hljs-keyword">for</span> A&#125;<br></code></pre></td></tr></table></figure>
+<p><img src="/images/2022/07/1538100346.png" srcset="/img/loading.gif" lazyload alt="23.png"></p>
+<p>再看C::C(this + 0x18, 0)</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs kotlin"><span class="hljs-number">5.</span><span class="hljs-keyword">this</span> + <span class="hljs-number">0x18</span>		=	C::C(<span class="hljs-keyword">this</span> + <span class="hljs-number">0x18</span>, <span class="hljs-number">0</span>)<br>	<span class="hljs-number">5.1</span> <span class="hljs-keyword">this</span> + <span class="hljs-number">0x18</span> =	C::vftable&#123;<span class="hljs-keyword">for</span> C&#125;<br>	<span class="hljs-number">5.2</span> <span class="hljs-keyword">this</span> + <span class="hljs-number">0x38</span>	=	C::vftable&#123;<span class="hljs-keyword">for</span> A&#125;<br></code></pre></td></tr></table></figure>
+
+<p>初始化完类B实例与类C实例后的进一步动作如下</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs kotlin"><span class="hljs-number">6.</span><span class="hljs-keyword">this</span> + <span class="hljs-number">0x00</span>		=	D::vftable&#123;<span class="hljs-keyword">for</span> B&#125;<br><span class="hljs-number">7.</span><span class="hljs-keyword">this</span> + <span class="hljs-number">0x18</span>		=	D::vftable&#123;<span class="hljs-keyword">for</span> C&#125;<br><span class="hljs-number">8.</span><span class="hljs-keyword">this</span> + <span class="hljs-number">0x38</span>		=	D::vftable&#123;<span class="hljs-keyword">for</span> A&#125;<br></code></pre></td></tr></table></figure>
+<p><img src="/images/2022/07/99300111.png" srcset="/img/loading.gif" lazyload alt="24.png"></p>
+<p>再来看对D.a(), D.b(), D.c(), D.d()的调用。对D.a的调用需要通过vbtable间接进行，但对D.b与D.c的调用都是通过vftable直接完成的，因为D.a方法是通过虚继承得到的，而D.b与D.c方法都是普通继承得到的，对应D.d方法的调用显然直接通过vftable完成<br><img src="/images/2022/07/1097173390.png" srcset="/img/loading.gif" lazyload alt="25.png"></p>
+<p>实际上，我们可以画出D类的内存布局。注意D中仅仅存在一份类A的实例，完结撒花~~~<br><img src="/images/2022/07/723160184.png/crsec.work/usr/uploads/2022/07/3522408507.png" srcset="/img/loading.gif" lazyload alt="虚继承3.png"></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%80%86%E5%90%91/" class="category-chain-item">逆向</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/C/">#C++</a>
+      
+        <a href="/tags/%E9%80%86%E5%90%91/">#逆向</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>C++虚函数问题</div>
+      <div>http://example.com/2022/07/07/C++虚函数问题/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>chengrui</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年7月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/07/11/linux_syscall%E7%AC%A6%E5%8F%B7%E6%81%A2%E5%A4%8D/" title="linux syscall桩函数符号恢复">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">linux syscall桩函数符号恢复</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
