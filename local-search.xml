@@ -4,6 +4,31 @@
   
   
   <entry>
+    <title>MSVC编译器编码问题</title>
+    <link href="/2022/09/29/post/"/>
+    <url>/2022/09/29/post/</url>
+    
+    <content type="html"><![CDATA[<h3 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h3><p>CLion的默认编码是UTF-8。坑爹的是MSVC编译器接收的源代码编码默认是GBK，所以CLion + MSVC会遇到很多奇形怪状的问题……</p><h3 id="MSVC编译器编码问题"><a href="#MSVC编译器编码问题" class="headerlink" title="MSVC编译器编码问题"></a>MSVC编译器编码问题</h3><p>MSVC编译器有两个编译选项，**/source-charset:**, **/execution-charset:**，顾名思义，前者指定传递给编译器的源文件的编码，后者指定编译出的BIN中的字符串所使用的编码</p><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs stylus"><span class="hljs-function"><span class="hljs-title">if</span><span class="hljs-params">(WIN32)</span></span><br><span class="hljs-function"><span class="hljs-title">target_compile_options</span><span class="hljs-params">(classify_fuying PUBLIC <span class="hljs-string">&quot;/source-charset:utf-8&quot;</span>)</span></span><br><span class="hljs-function"><span class="hljs-title">target_compile_options</span><span class="hljs-params">(classify_fuying PUBLIC <span class="hljs-string">&quot;/execution-charset:gbk&quot;</span>)</span></span><br><span class="hljs-function"><span class="hljs-title">endif</span><span class="hljs-params">()</span></span><br></code></pre></td></tr></table></figure>]]></content>
+    
+    
+    <categories>
+      
+      <category>开发</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>CMake</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>Hello World</title>
     <link href="/2022/09/17/hello-world/"/>
     <url>/2022/09/17/hello-world/</url>
