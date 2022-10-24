@@ -16,12 +16,12 @@
   <meta name="author" content="chengrui">
   <meta name="keywords" content="">
   
-    <meta name="description" content="前言我在绿盟实习参与的一个工作是代码相似度检测，我的mentor晖哥的做法是先完成binary code -&gt; ir的过程，再在ir的基础上进行相似度比较。这样做的优点是可以消除架构带来的差异，比如一个恶意软件家族可能会被编译到多个CPU架构上，为了检测出同家族不同架构恶意样本的相似度就必须克服这个难题，也就是将binary code提升到ir。因此，我开始调研IDA提供的Microcode">
+    <meta name="description" content="前言相似度检测的一种思路是先完成binary code -&gt; ir的过程，再在ir的基础上进行相似度比较。这样做的优点是可以消除架构带来的差异，比如一个恶意软件家族可能会被编译到多个CPU架构上，为了检测出同家族不同架构恶意样本的相似度就必须克服这个难题，也就是将binary code提升到ir。因此，我开始调研IDA提供的Microcode。下文中出现的IR如无特殊说明全部指代Microc">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IDA Pro Microcode 学习">
 <meta property="og:url" content="http://example.com/2022/07/12/IDA_Pro_Microcode_%E5%AD%A6%E4%B9%A0/index.html">
 <meta property="og:site_name" content="Rui Cheng, aka 程瑞">
-<meta property="og:description" content="前言我在绿盟实习参与的一个工作是代码相似度检测，我的mentor晖哥的做法是先完成binary code -&gt; ir的过程，再在ir的基础上进行相似度比较。这样做的优点是可以消除架构带来的差异，比如一个恶意软件家族可能会被编译到多个CPU架构上，为了检测出同家族不同架构恶意样本的相似度就必须克服这个难题，也就是将binary code提升到ir。因此，我开始调研IDA提供的Microcode">
+<meta property="og:description" content="前言相似度检测的一种思路是先完成binary code -&gt; ir的过程，再在ir的基础上进行相似度比较。这样做的优点是可以消除架构带来的差异，比如一个恶意软件家族可能会被编译到多个CPU架构上，为了检测出同家族不同架构恶意样本的相似度就必须克服这个难题，也就是将binary code提升到ir。因此，我开始调研IDA提供的Microcode。下文中出现的IR如无特殊说明全部指代Microc">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/images/2022/07/4129722024.jpg">
 <meta property="og:image" content="http://example.com/images/2022/07/2995875403.png">
@@ -308,7 +308,7 @@
             
               <div class="markdown-body">
                 
-                <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>我在绿盟实习参与的一个工作是代码相似度检测，我的mentor晖哥的做法是先完成binary code -&gt; ir的过程，再在ir的基础上进行相似度比较。这样做的优点是可以消除架构带来的差异，比如一个恶意软件家族可能会被编译到多个CPU架构上，为了检测出同家族不同架构恶意样本的相似度就必须克服这个难题，也就是将binary code提升到ir。因此，我开始调研IDA提供的Microcode。下文中出现的IR如无特殊说明全部指代Microcode</p>
+                <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>相似度检测的一种思路是先完成binary code -&gt; ir的过程，再在ir的基础上进行相似度比较。这样做的优点是可以消除架构带来的差异，比如一个恶意软件家族可能会被编译到多个CPU架构上，为了检测出同家族不同架构恶意样本的相似度就必须克服这个难题，也就是将binary code提升到ir。因此，我开始调研IDA提供的Microcode。下文中出现的IR如无特殊说明全部指代Microcode</p>
 <span id="more"></span>
 <h3 id="IDA反编译器架构"><a href="#IDA反编译器架构" class="headerlink" title="IDA反编译器架构"></a>IDA反编译器架构</h3><p>产生IR代码 -&gt; 转换IR代码（进行各种优化化简IR代码） -&gt; 分别局部变量 -&gt; 产生ctree -&gt; 修饰ctree -&gt; 打印ctree（反汇编结果）</p>
 <p>在早期，IDA只开放了操纵ctree的API。在IDA 7.0版本中，终于出现了操纵IR的API</p>
