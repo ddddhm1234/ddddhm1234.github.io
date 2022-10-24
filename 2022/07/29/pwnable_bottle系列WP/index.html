@@ -24,7 +24,7 @@
 <meta property="og:description" content="前言最近在想社团招新培训的事，于是找了一些入门安全学习资料，在这个过程中还是有一些收获的，写篇文章记录一下 pwnable.kr cmd1 显然，我们要通过cmd1执行cat flag 这道题有两个坑点  修改了PATH环境变量为&#x2F;thankyouverymuch，所以我们必须使用绝对路径引用cat和flag  有一个过滤函数，会过滤掉包含’sh’, ‘flag’, ‘tmp’的命令   如果不过">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/images/2022/07/3054445868.png">
-<meta property="og:image" content="http://example.com/images/2022/07/3557561940.pngploads/2022/07/3557561940.png">
+<meta property="og:image" content="http://example.com/images/2022/07/3557561940.png">
 <meta property="article:published_time" content="2022-07-29T05:52:00.000Z">
 <meta property="article:modified_time" content="2022-07-29T07:27:45.000Z">
 <meta property="article:author" content="程瑞">
@@ -295,7 +295,7 @@
 
 <span id="more"></span>
 
-<h3 id="cmd2"><a href="#cmd2" class="headerlink" title="cmd2"></a>cmd2</h3><p><img src="/images/2022/07/3557561940.pngploads/2022/07/3557561940.png" srcset="/img/loading.gif" lazyload alt="1.png"></p>
+<h3 id="cmd2"><a href="#cmd2" class="headerlink" title="cmd2"></a>cmd2</h3><p><img src="/images/2022/07/3557561940.png" srcset="/img/loading.gif" lazyload alt="1.png"></p>
 <p>新增加了一些过滤规则，过滤掉/, `</p>
 <p>通过查找WP，知道了shell中另一种执行命令的方式**$(command)**，在网上搜索了下，好像Win的PowerShell也支持这种方式</p>
 <p>而后使用<strong>printf “%b” “\x2f”<strong>输出/，使用</strong>printf “%s %s” fl ag</strong>或者<strong>echo f; echo lag</strong>绕过对flag的检测即可</p>

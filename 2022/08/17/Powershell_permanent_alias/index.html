@@ -23,12 +23,12 @@
 <meta property="og:site_name" content="Rui Cheng, aka 程瑞">
 <meta property="og:description" content="最近一直要用到pin，发现可以新建一个别名简化流程 1New-Alias -Name pin -Value D:\Projects\pin\pin.exe 完成后，输入pin即可。但是坑爹的是重启一个shell窗口这个别名就失效了 参考1，在C:\Users\user_name\Documents目录下新建一个profile.ps1，然后把新建别名的指令写入它，powershell在以user_n">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/images/2022/08/408243473.png473.png">
+<meta property="og:image" content="http://example.com/images/2022/08/408243473.png">
 <meta property="article:published_time" content="2022-08-17T06:11:00.000Z">
 <meta property="article:modified_time" content="2022-08-17T06:25:53.000Z">
 <meta property="article:author" content="程瑞">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/images/2022/08/408243473.png473.png">
+<meta name="twitter:image" content="http://example.com/images/2022/08/408243473.png">
   
   
   
@@ -277,12 +277,12 @@
                 <p>最近一直要用到pin，发现可以新建一个别名简化流程</p>
 <figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs pgsql"><span class="hljs-built_in">New</span>-<span class="hljs-keyword">Alias</span> -<span class="hljs-type">Name</span> pin -<span class="hljs-keyword">Value</span> D:\Projects\pin\pin.exe<br></code></pre></td></tr></table></figure>
 <p>完成后，输入pin即可。但是坑爹的是重启一个shell窗口这个别名就失效了</p>
-<p>参考<a href="/images/2022/08/408243473.png473.png">1</a>，在C:\Users\user_name\Documents目录下新建一个profile.ps1，然后把新建别名的指令写入它，powershell在以user_name用户启动时，会自动执行其中的指令</p>
+<p>参考<a href="/images/2022/08/408243473.png">1</a>，在C:\Users\user_name\Documents目录下新建一个profile.ps1，然后把新建别名的指令写入它，powershell在以user_name用户启动时，会自动执行其中的指令</p>
 <p>你以为到这里就结束了吗？naive…</p>
 <p>有个大坑，在某个目录下面，右键，在terminal中打开，弹出的powershell窗口又不存在pin别名了</p>
 <p>查找资料[2]发现，powershell有6个不同的路径设置profile.ps1，感受一下，分别对应不同的用户与不同的目录启动。把profile.ps1复制到$PsHome目录下即可</p>
-<p><img src="/images/2022/08/408243473.png473.png" srcset="/img/loading.gif" lazyload alt="0.png"></p>
-<p><a href="/images/2022/08/408243473.png473.png">1</a><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/24914589/how-to-create-permanent-powershell-aliases">https://stackoverflow.com/questions/24914589/how-to-create-permanent-powershell-aliases</a><br>[2]<a target="_blank" rel="noopener" href="https://web.archive.org/web/20121105003839/http://blogs.technet.com/b/heyscriptingguy/archive/2012/05/21/understanding-the-six-powershell-profiles.aspx">https://web.archive.org/web/20121105003839/http://blogs.technet.com/b/heyscriptingguy/archive/2012/05/21/understanding-the-six-powershell-profiles.aspx</a></p>
+<p><img src="/images/2022/08/408243473.png" srcset="/img/loading.gif" lazyload alt="0.png"></p>
+<p><a href="/images/2022/08/408243473.png">1</a><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/24914589/how-to-create-permanent-powershell-aliases">https://stackoverflow.com/questions/24914589/how-to-create-permanent-powershell-aliases</a><br>[2]<a target="_blank" rel="noopener" href="https://web.archive.org/web/20121105003839/http://blogs.technet.com/b/heyscriptingguy/archive/2012/05/21/understanding-the-six-powershell-profiles.aspx">https://web.archive.org/web/20121105003839/http://blogs.technet.com/b/heyscriptingguy/archive/2012/05/21/understanding-the-six-powershell-profiles.aspx</a></p>
 
                 
               </div>

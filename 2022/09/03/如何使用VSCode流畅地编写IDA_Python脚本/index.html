@@ -23,7 +23,7 @@
 <meta property="og:site_name" content="Rui Cheng, aka 程瑞">
 <meta property="og:description" content="前言radare2的分析结果与IDA相比差距仍然是较大的，还是有必要使用IDA完成自动化分析工作。本文的内容涵盖如何搭建IDA Python脚本开发环境以及IDA Batch Mode使用入门教程">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/images/2022/09/2576976518.pngng">
+<meta property="og:image" content="http://example.com/images/2022/09/2576976518.png">
 <meta property="article:published_time" content="2022-09-03T03:17:00.000Z">
 <meta property="article:modified_time" content="2022-09-03T10:25:17.000Z">
 <meta property="article:author" content="程瑞">
@@ -32,7 +32,7 @@
 <meta property="article:tag" content="逆向自动化">
 <meta property="article:tag" content="流程化工作">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/images/2022/09/2576976518.pngng">
+<meta name="twitter:image" content="http://example.com/images/2022/09/2576976518.png">
   
   
   
@@ -280,12 +280,12 @@
                 
                 <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>radare2的分析结果与IDA相比差距仍然是较大的，还是有必要使用IDA完成自动化分析工作。本文的内容涵盖如何搭建IDA Python脚本开发环境以及IDA Batch Mode使用入门教程</p>
 <span id="more"></span>
-<h3 id="VSCode环境配置"><a href="#VSCode环境配置" class="headerlink" title="VSCode环境配置"></a>VSCode环境配置</h3><p>为了获得代码补全功能，需要配置一下vscode。点击 运行 —— 打开配置，在settings.json中，添加”python.analysis.extraPaths”项，将它设置为IDA Python的模块目录<br><img src="/images/2022/09/2576976518.pngng" srcset="/img/loading.gif" lazyload alt="0.png"></p>
+<h3 id="VSCode环境配置"><a href="#VSCode环境配置" class="headerlink" title="VSCode环境配置"></a>VSCode环境配置</h3><p>为了获得代码补全功能，需要配置一下vscode。点击 运行 —— 打开配置，在settings.json中，添加”python.analysis.extraPaths”项，将它设置为IDA Python的模块目录<br><img src="/images/2022/09/2576976518.png" srcset="/img/loading.gif" lazyload alt="0.png"></p>
 <h3 id="IDA-Batch-Mode"><a href="#IDA-Batch-Mode" class="headerlink" title="IDA Batch Mode"></a>IDA Batch Mode</h3><p>IDA有GUI与CUI两个版本，在现阶段，CUI版本对应idat.exe与idat64.exe。显然，CUI版本比GUI版本需要的资源开销更少。Batch Mode的意思是批处理模式，应用场景是提取大量样本的信息</p>
 <h4 id="进入Batch-Mode"><a href="#进入Batch-Mode" class="headerlink" title="进入Batch Mode"></a>进入Batch Mode</h4><p>在cmd.exe中（不要使用windows terminal，有非常奇怪的bug），执行如下命令，它的含义是调用CUI版本的IDA分析目标可执行文件，并调用待执行脚本.py。-B表示Batch Mode，如果不指定这个选项，IDA会进入与用户交互的状态，让用户选择一些分析参数，这会导致自动化流程“卡住”。目测，待执行脚本.py的路径中不能有空格，我的建议是将脚本放在IDA目录下，这样就可以直接以脚本名.py指定它</p>
 <figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs armasm"><span class="hljs-symbol">idat.exe</span> -<span class="hljs-keyword">B</span> -S<span class="hljs-string">&quot;待执行脚本.py 传递给脚本的参数1 参数2&quot;</span> 目标可执行文件<br></code></pre></td></tr></table></figure>
 
-<h4 id="待执行脚本-py编写"><a href="#待执行脚本-py编写" class="headerlink" title="待执行脚本.py编写"></a>待执行脚本.py编写</h4><p>有三个点需要注意：1) IDA并不是等分析结束后才调用脚本，分析过程中就会调用脚本，因此，我们要在脚本中添加代码等待IDA分析完成，否则因为分析结果不完整，会出现脚本执行结果与预期不符的情况；2) 需要在脚本中执行退出命令，IDA并不会自行退出；3) 在-S中传递给脚本的参数，不能通过sys.argv获取到，要通过idc.ARGV获取，idc.ARGV<a href="/images/2022/09/2576976518.pngng">1</a>对应传递的第一个参数</p>
+<h4 id="待执行脚本-py编写"><a href="#待执行脚本-py编写" class="headerlink" title="待执行脚本.py编写"></a>待执行脚本.py编写</h4><p>有三个点需要注意：1) IDA并不是等分析结束后才调用脚本，分析过程中就会调用脚本，因此，我们要在脚本中添加代码等待IDA分析完成，否则因为分析结果不完整，会出现脚本执行结果与预期不符的情况；2) 需要在脚本中执行退出命令，IDA并不会自行退出；3) 在-S中传递给脚本的参数，不能通过sys.argv获取到，要通过idc.ARGV获取，idc.ARGV<a href="/images/2022/09/2576976518.png">1</a>对应传递的第一个参数</p>
 <p>一个模板脚本</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> sys<br><br><span class="hljs-keyword">import</span> ida_auto<br><span class="hljs-keyword">import</span> idaapi<br><span class="hljs-keyword">import</span> idautils<br><span class="hljs-keyword">import</span> idc<br><br>ida_auto.auto_wait() <span class="hljs-comment"># 等待IDA分析完成</span><br><br>f = <span class="hljs-built_in">open</span>(<span class="hljs-string">r&quot;E:\FUCK.TXT&quot;</span>, <span class="hljs-string">&quot;w&quot;</span>) <span class="hljs-comment"># 创建文件输出结果</span><br>f.write(idc.ARGV[<span class="hljs-number">1</span>]) <span class="hljs-comment"># 向文件中写入第一个参数</span><br>f.write(<span class="hljs-string">&quot;\n&quot;</span>)<br>f.write(<span class="hljs-string">&quot;I RUN\n&quot;</span>)<br><br>f.write(<span class="hljs-string">&quot;\n&quot;</span>)<br><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;count %d&#x27;</span> % <span class="hljs-built_in">len</span>(<span class="hljs-built_in">list</span>(idautils.Functions())))<br><span class="hljs-keyword">for</span> ea <span class="hljs-keyword">in</span> idautils.Functions():<br>    f.write(<span class="hljs-built_in">hex</span>(ea) + idc.get_func_name(ea) + <span class="hljs-string">&quot;\n&quot;</span>) <span class="hljs-comment"># 打印出所有函数的起始地址与函数名</span><br>f.close()<br><br><br>idc.qexit(<span class="hljs-number">0</span>) <span class="hljs-comment"># 提取完所需信息后，退出IDA</span><br></code></pre></td></tr></table></figure>
 

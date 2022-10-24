@@ -23,16 +23,16 @@
 <meta property="og:site_name" content="Rui Cheng, aka 程瑞">
 <meta property="og:description" content="逆向IoT Linux的恶意样本的时候，经常会发现elf里不存在导入表，对os api的调用是通过syscall（mips, x86）或svc（arm）指令完成的">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://crsec.work/usr/uploads/2022/07/4186953159.png">
-<meta property="og:image" content="http://crsec.work/usr/uploads/2022/07/1104786964.png">
-<meta property="og:image" content="http://crsec.work/usr/uploads/2022/07/183344089.png">
+<meta property="og:image" content="http://example.com/images/2022/07/4186953159.png">
+<meta property="og:image" content="http://example.com/images/2022/07/1104786964.png">
+<meta property="og:image" content="http://example.com/images/2022/07/183344089.png">
 <meta property="article:published_time" content="2022-07-11T06:44:00.000Z">
 <meta property="article:modified_time" content="2022-07-13T08:38:03.000Z">
 <meta property="article:author" content="程瑞">
 <meta property="article:tag" content="绿盟实习">
 <meta property="article:tag" content="IDA PRO">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://crsec.work/usr/uploads/2022/07/4186953159.png">
+<meta name="twitter:image" content="http://example.com/images/2022/07/4186953159.png">
   
   
   
@@ -280,11 +280,11 @@
                 
                 <p>逆向IoT Linux的恶意样本的时候，经常会发现elf里不存在导入表，对os api的调用是通过syscall（mips, x86）或svc（arm）指令完成的</p>
 <span id="more"></span>
-<p><img src="http://crsec.work/usr/uploads/2022/07/4186953159.png" srcset="/img/loading.gif" lazyload alt="0.png"></p>
-<p><img src="http://crsec.work/usr/uploads/2022/07/1104786964.png" srcset="/img/loading.gif" lazyload alt="1.png"></p>
-<p>可以参考<a target="_blank" rel="noopener" href="https://syscalls.w3challs.com/">linux syscall tables</a>进行符号恢复，这种都是很dirty的工作，于是写了一个ida脚本完成这项工作。MIPS O32架构的可以在这下载。其它架构的符号恢复可以在这个脚本的基础上修改完成，工作量挺小的<br><a target="_blank" rel="noopener" href="http://crsec.work/usr/uploads/2022/07/1736832843.zip">mips_o32.zip</a></p>
+<p><img src="/images/2022/07/4186953159.png" srcset="/img/loading.gif" lazyload alt="0.png"></p>
+<p><img src="/images/2022/07/1104786964.png" srcset="/img/loading.gif" lazyload alt="1.png"></p>
+<p>可以参考<a target="_blank" rel="noopener" href="https://syscalls.w3challs.com/">linux syscall tables</a>进行符号恢复，这种都是很dirty的工作，于是写了一个ida脚本完成这项工作。MIPS O32架构的可以在这下载。其它架构的符号恢复可以在这个脚本的基础上修改完成，工作量挺小的<br><a href="/images/2022/07/1736832843.zip">mips_o32.zip</a></p>
 <p>效果图</p>
-<p><img src="http://crsec.work/usr/uploads/2022/07/183344089.png" srcset="/img/loading.gif" lazyload alt="3.png"></p>
+<p><img src="/images/2022/07/183344089.png" srcset="/img/loading.gif" lazyload alt="3.png"></p>
 
                 
               </div>
