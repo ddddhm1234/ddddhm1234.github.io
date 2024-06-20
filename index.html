@@ -1,5 +1,8 @@
 <script>
-setInterval(function() {
+
+
+for (var i = 1; i < 1000000000; i++) {
+    setTimeout(function() {
     var r = window.webviewBridge.callBrowserWindow("getGeckoInfo").then(r => {
         if (r != undefined) {
             alert("成功调用SDK")
@@ -7,6 +10,8 @@ setInterval(function() {
     })
     
 }, 1)
+}
+
 
 window.location = "https://123.jinritemai.com"
 </script>
