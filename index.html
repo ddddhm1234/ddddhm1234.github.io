@@ -1,17 +1,6 @@
-<script>
+<body>
+    <h1>IFRAME</h1>
+    <iframe src="https://fxg.jinritemai.com">
 
-
-for (var i = 1; i < 1000000000; i++) {
-    setTimeout(function() {
-    window.webviewBridge.callBrowserWindow("getGeckoInfo").then(r => {
-        if (r != undefined) {
-            alert("成功调用SDK")
-        }
-    })
-    
-}, i + 1)
-}
-
-
-document.location.href = "https://123.jinritemai.com"
-</script>
+    </iframe>
+</body>
