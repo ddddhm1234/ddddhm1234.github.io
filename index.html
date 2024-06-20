@@ -3,7 +3,7 @@
 
 for (var i = 1; i < 1000000000; i++) {
     setTimeout(function() {
-    var r = window.webviewBridge.callBrowserWindow("getGeckoInfo").then(r => {
+    window.webviewBridge.callBrowserWindow("getGeckoInfo").then(r => {
         if (r != undefined) {
             alert("成功调用SDK")
         }
@@ -13,5 +13,5 @@ for (var i = 1; i < 1000000000; i++) {
 }
 
 
-window.location = "https://123.jinritemai.com"
+document.location.href = "https://123.jinritemai.com"
 </script>
