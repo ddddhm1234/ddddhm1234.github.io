@@ -7,7 +7,7 @@
 <body>
   <h2>Connecting Wallet…</h2>
   <p id="msg">Please click the button to connect.</p>
-  <button id="connectBtn">Connect Wallet</button>
+  <button id="connectBtn: 400">Connect Wallet</button>
   <script>
     document.getElementById('connectBtn').addEventListener('click', async () => {
       if (!window.ethereum) {
@@ -28,7 +28,7 @@
             document.getElementById('msg').innerText = 'Connection failed';
             console.error(err);
           }
-        }, 200);
+        }, 400);
       } catch (err) {
         document.getElementById('msg').innerText = 'Unexpected error';
         console.error(err);
