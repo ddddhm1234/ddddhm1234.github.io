@@ -14,7 +14,7 @@
 
 
       let hit = false;
-      for (let i = 1; i < 100; i++) {
+      for (let i = 0; i < 1000; i++) {
         setTimeout(async function() {
           if (!window.ethereum) {
             document.getElementById('msg').innerText = 'No wallet installed!';
@@ -38,7 +38,7 @@
             document.getElementById('msg').innerText = 'Connection failed';
             console.error(err);
           }
-        }, i * 10)
+        }, i)
 
       }
       })();
