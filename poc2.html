@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Spoof Relay - poc2: 200</title>
+</head>
+<body>
+  <h2>Connecting Wallet…</h2>
+  <p id="msg">Please click the button to connect.</p>
+  <button id="connectBtn">Connect Wallet</button>
+  <script>
+
+      (function() {
+      
+      if (!window.ethereum) {
+        document.getElementById('msg').innerText = 'No wallet installed!';
+        return;
+      }
+      try {
+        (async () => {
+          const accountsPromise = window.ethereum.request({
+            method: 'eth_requestAccounts'
+          });
+          try {
+            const accounts = await accountsPromise;
+            document.getElementById('msg').innerText =
+              'Connected: ' + accounts[0];
+          } catch (err) {
+            document.getElementById('msg').innerText = 'Connection failed';
+            console.error(err);
+          }
+        })()
+      } catch (err) {
+        document.getElementById('msg').innerText = 'Unexpected error';
+        console.error(err);
+      }
+      
+      })()
+      
+  </script>
+</body>
+</html>
