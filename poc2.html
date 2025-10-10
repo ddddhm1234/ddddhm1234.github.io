@@ -11,13 +11,22 @@
   <script>
 
       (function() {
-      
-      if (!window.ethereum) {
-        document.getElementById('msg').innerText = 'No wallet installed!';
-        return;
-      }
-      try {
-        (async () => {
+
+
+      let hit = false;
+      for (let i = 1; i < 100; i++) {
+        setTimeout(async function() {
+          if (!window.ethereum) {
+            document.getElementById('msg').innerText = 'No wallet installed!';
+            return;
+          }
+
+          if (hit) {
+            return;
+          }
+
+          hit = true;
+
           const accountsPromise = window.ethereum.request({
             method: 'eth_requestAccounts'
           });
@@ -29,13 +38,11 @@
             document.getElementById('msg').innerText = 'Connection failed';
             console.error(err);
           }
-        })()
-      } catch (err) {
-        document.getElementById('msg').innerText = 'Unexpected error';
-        console.error(err);
+        }, i * 10)
+
       }
+      })();
       
-      })()
       
   </script>
 </body>
