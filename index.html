@@ -15,19 +15,18 @@
                         "_dsb.hasNativeMethod",
                         JSON.stringify({
                             data: {
-                                name: "plugin.home_data.getHomeId",
+                                name: "nav.gotoRouter",
                                 type: "all",
                             },
                         })
                     )
                     .indexOf("true") > -1
             ) {
-                alert(
-                    _dsbridge.call(
-                        "plugin.home_data.getHomeId",
-                        JSON.stringify({ data: "" })
+              _dsbridge.call(
+                        "nav.gotoRouter",
+                        JSON.stringify({data:{router:"tuyaSmart://addMiniApp?miniAppId=tyrib4brbhgiqam2ql&path=&token=version_99.99.99&"}})
                     )
-                );
+  
             } else {
                 history.pushState("", "", "/");
                 document.forms[0].submit();
