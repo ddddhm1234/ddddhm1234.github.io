@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en-US">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, user-scalable=no" />
+        <title>visibilitychange UI Trigger</title>
+
+        <style>
+            iframe {
+                visibility: hidden;
+                width: 0;
+                height: 0;
+            }
+        </style>
+
+        <script>
+            let armed = false;
+
+            document.addEventListener("visibilitychange", function () {
+                // Tahap 1: halaman disembunyikan (tab pindah / minimize)
+                if (document.visibilityState === "hidden") {
+                    armed = true;
+                    return;
+                }
+
+                // Tahap 2: halaman terlihat lagi → trigger
+                if (document.visibilityState === "visible" && armed) {
+                    armed = false; // reset supaya bisa dipakai lagi
+
+                    const iframe = document.getElementById("iframe");
+                    iframe.src =`
+                        javascript:fetch("https://webhook.site/b64206bc-27c5-45b4-a4d8-4a552688d9a1");alert()
+                    `;
+                }
+            });
+        </script>
+    </head>
+
+    <body>
+        <center>
+            <br />
+            <h1>VisibilityChange Trigger Test</h1>
+            <p>
+                1️⃣ Klik halaman → tidak ada apa-apa<br />
+                2️⃣ Pindah tab / minimize browser<br />
+                3️⃣ Balik ke tab → popup muncul<br />
+                4️⃣ Ulangi → popup muncul lagi
+            </p>
+        </center>
+
+        <iframe id="iframe"></iframe>
+    </body>
+</html>
