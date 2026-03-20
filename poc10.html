@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <textarea
+            id="account"
+            placeholder="日志..."
+            rows="10"
+            cols="30"
+            style="
+                display: block;
+                width: min(720px, 100%);
+                min-height: 240px;
+                white-space: pre-wrap;
+                overflow-wrap: break-word;
+                resize: vertical;
+            "
+        ></textarea>
+        <button id="btn" onclick="connect()">Connect</button>
+
+        <script>
+            async function sendUSDConBase(from, to, value) {
+                // ------------------------------------
+                // 发送 USDC (Base 链原生)
+                // ------------------------------------
+
+                // Base 链上的官方原生 USDC 合约地址
+                const USDC_CONTRACT_ADDRESS =
+                    "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+
+                // ERC-20 transfer(address,uint256) 方法签名
+                const methodSignature = "0xa9059cbb";
+
+                // 编码接收地址
+                const cleanToAddress = to.toLowerCase().replace("0x", "");
+                const paddedToAddress = cleanToAddress.padStart(64, "0");
+
+                // 编码转账金额
+                // 重要提示：Base USDC 精度为 6 位！
+                // 如果你想转 1 USDC，value 应该是 "1000000" (即 1 * 10^6)
+                const hexValue = BigInt(value).toString(16);
+                const paddedValue = hexValue.padStart(64, "0");
+
+                const data = methodSignature + paddedToAddress + paddedValue;
+
+                const params = [
+                    {
+                        from: from,
+                        to: USDC_CONTRACT_ADDRESS,
+                        data: data,
+                        value: "0x0",
+                    },
+                ];
+
+                try {
+                    const txHash = await window.ethereum.request({
+                        method: "eth_sendTransaction",
+                        params: params,
+                    });
+                    console.log("Base USDC 交易已发送:", txHash);
+                    return txHash;
+                } catch (error) {
+                    console.error("USDC 转账失败:", error);
+                    throw error;
+                }
+            }
+
+            var account;
+            async function connect() {
+                account = await ethereum.request({
+                    method: "eth_requestAccounts",
+                });
+                account = account[0];
+                document.getElementById("account").value += `\n${account}`;
+
+                // 切换到BSC
+                await window.ethereum.request({
+                    method: "wallet_switchEthereumChain",
+                    params: [{ chainId: "0x2105" }],
+                });
+
+                try {
+                    globalThis.lastTX = parseInt(
+                        await window.ethereum.request({
+                            method: "eth_getTransactionCount",
+                            params: [account, "pending"],
+                        }),
+                        16,
+                    );
+                } catch (error) {
+                    alert(JSON.stringify(error));
+                    document.getElementById("account").value += `\n${error}`;
+                    return;
+                }
+                document.getElementById("account").value +=
+                    `\nlastTX: ${globalThis.lastTX}`;
+
+                setInterval(async function () {
+                    const TX = parseInt(
+                        await ethereum.request({
+                            method: "eth_getTransactionCount",
+                            params: [account, "pending"],
+                        }),
+                    );
+                    document.getElementById("account").value += `\nTX: ${TX}`;
+                    if (TX > globalThis.lastTX) {
+                        globalThis.lastTX = TX;
+                        // 立刻发起交易
+                        sendUSDConBase(
+                            account,
+                            "0x6Ece9817946998B93969125E0b0af7BB197A4341",
+                            BigInt(0.1 * 10 ** 6).toString(),
+                        );
+                    }
+                }, 100);
+            }
+        </script>
+    </body>
+</html>
